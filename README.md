@@ -41,9 +41,11 @@ See [docs/PORT_NOTES.md](docs/PORT_NOTES.md) for intentional differences from th
   [Getting the APK](#getting-the-apk).
 - **Unity 6000.2.6f2**, installed with [Unity Hub](https://unity.com/download). A free Unity
   Personal license is enough.
-  - Add the **Build Support (Mono)** module for every platform you want to build for: *Windows
-    Build Support (Mono)*, *Mac Build Support (Mono)*, *Linux Build Support (Mono)*.
-  - Your own OS's module is usually installed with the editor.
+  - To build for your own OS you need nothing extra. On macOS, Mac (Mono) support comes with the
+    editor. On Windows and Linux, Unity Hub installs your OS's build support with the editor.
+  - Only to cross-build for another OS, add that OS's module in Unity Hub: *Windows Build
+    Support (Mono)*, *Mac Build Support (Mono)* or *Linux Build Support (Mono)*. IL2CPP modules
+    and Xcode are not needed.
 - **Python 3.10 or newer** (only the standard library is used).
 - About **3 GB** of free disk space, and an internet connection for the first setup. Setup
   downloads AssetRipper once and Unity downloads one package.

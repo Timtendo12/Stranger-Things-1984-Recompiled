@@ -145,9 +145,10 @@ def find_unity_editor():
         'or set UNITY_EDITOR in .env to the editor executable.')
 
 
-def playback_engines_dir(editor_exe):
-    """Folder that holds the platform build-support modules of an editor install."""
+def playback_engines_dirs(editor_exe):
+    """Folders that hold the platform build-support modules of an editor install."""
     if host_os() == 'macos':
-        # .../<version>/Unity.app/Contents/MacOS/Unity -> .../<version>/PlaybackEngines
-        return editor_exe.parents[3] / 'PlaybackEngines'
-    return editor_exe.parent / 'Data' / 'PlaybackEngines'
+        # .../<version>/Unity.app/Contents/MacOS/Unity: the built-in Mac (Mono) support lives in
+        # Unity.app/Contents/PlaybackEngines, modules added through Unity Hub in <version>/PlaybackEngines
+        return [editor_exe.parents[1] / 'PlaybackEngines', editor_exe.parents[3] / 'PlaybackEngines']
+    return [editor_exe.parent / 'Data' / 'PlaybackEngines']

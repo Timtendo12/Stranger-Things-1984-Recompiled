@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_discord_config  # noqa: E402
 from _common import (DIST, PROJECT, SETUP_STAMP, ToolError, find_unity_editor, host_os, info,  # noqa: E402
-                     playback_engines_dir, run_main, unity_version, warn)
+                     playback_engines_dirs, run_main, unity_version, warn)
 
 TARGETS = {
     # name: (Unity -buildTarget, PlaybackEngines module folder, Unity Hub module name, output file)
@@ -29,11 +29,13 @@ TARGETS = {
 
 
 def check_module(editor, target):
-    engines = playback_engines_dir(editor)
-    if not engines.is_dir():
+    dirs = [d for d in playback_engines_dirs(editor) if d.is_dir()]
+    if not dirs:
         return  # unusual layout; let Unity report it
-    have = {p.name.lower() for p in engines.iterdir()}
+    have = {p.name.lower() for d in dirs for p in d.iterdir()}
     _, folder, module, _ = TARGETS[target]
+    if target == host_os() and target == 'macos' and folder not in have:
+        return  # the host platform's Mono support ships with the editor; let Unity confirm
     if folder not in have:
         raise ToolError(f'Unity {unity_version()} has no {module} module, which is needed to build for {target}.\n'
                         f'Add it in Unity Hub: Installs > {unity_version()} > (gear) > Add modules > {module}.')
