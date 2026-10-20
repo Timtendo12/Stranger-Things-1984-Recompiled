@@ -60,16 +60,4 @@ public class Fix64MinMax
 		}
 		return mMin;
 	}
-
-	public void Save(FBinWriter writer)
-	{
-		writer.Write(mMin);
-		writer.Write(mMax);
-	}
-
-	public void Load(FBinReader reader)
-	{
-		mMin = reader.ReadFix64();
-		mMax = reader.ReadFix64();
-	}
 }

@@ -81,18 +81,4 @@ public class FRequirementCollectible : FPlayerStatsRequirement
 		}
 		return EvaluateReturnCode.True;
 	}
-
-	public override void SaveInternal(FSavegameWriter writer)
-	{
-		base.SaveInternal(writer);
-		writer.Write(DBID);
-		writer.Write(FailIfCollected);
-	}
-
-	public override void LoadInternal(FSavegameReader reader)
-	{
-		base.LoadInternal(reader);
-		DBID = reader.ReadInt();
-		FailIfCollected = reader.ReadBool();
-	}
 }

@@ -205,32 +205,6 @@ public class FHermiteSpline<T>
 		return GetCurveAndParam(time, out param).EvaluateSecondDerivative(param);
 	}
 
-	public void BinWrite(FBinWriter writer)
-	{
-		writer.Write(mCurves.Count);
-		for (int i = 0; i < mCurves.Count; i++)
-		{
-			mCurves[i].BinWrite(writer);
-			writer.Write(mTimes[i]);
-		}
-		writer.Write(mStartTime);
-	}
-
-	public void BinRead(FBinReader reader)
-	{
-		mCurves.Clear();
-		mTimes.Clear();
-		int num = reader.ReadInt();
-		for (int i = 0; i < num; i++)
-		{
-			FHermiteCurve<T> fHermiteCurve = new FHermiteCurve<T>(Helper);
-			fHermiteCurve.BinRead(reader);
-			mCurves.Add(fHermiteCurve);
-			mTimes.Add(reader.ReadFloat());
-		}
-		mStartTime = reader.ReadFloat();
-	}
-
 	public T GetFirstKey()
 	{
 		return mCurves[0].Controls[0];

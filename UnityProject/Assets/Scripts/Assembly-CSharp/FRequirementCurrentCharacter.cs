@@ -49,16 +49,4 @@ public class FRequirementCurrentCharacter : FPlayerStatsRequirement
 		}
 		return !(data.CurrentPlayerState.CurrentCharacter != CharacterName) ? EvaluateReturnCode.True : EvaluateReturnCode.False;
 	}
-
-	public override void SaveInternal(FSavegameWriter writer)
-	{
-		base.SaveInternal(writer);
-		writer.Write(CharacterName);
-	}
-
-	public override void LoadInternal(FSavegameReader reader)
-	{
-		base.LoadInternal(reader);
-		CharacterName = reader.ReadString();
-	}
 }

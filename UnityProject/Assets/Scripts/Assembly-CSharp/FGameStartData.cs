@@ -20,8 +20,6 @@ public class FGameStartData
 
 	public bool SkipPregame;
 
-	public FBinReader SavegameReader;
-
 	[DataMember]
 	public Guid GameStateID { get; set; }
 
@@ -63,8 +61,6 @@ public class FGameStartData
 
 	[DataMember]
 	public bool TrackGameRecord { get; set; }
-
-	public bool IsSavegame => SavegameReader != null;
 
 	public void SetPlayersToRandomize(int[] playerIDs)
 	{
@@ -156,60 +152,5 @@ public class FGameStartData
 	public FGameStartPlayerData GetData(int playerID)
 	{
 		return Players.Get(playerID);
-	}
-
-	public void Save(FBinWriter writer)
-	{
-		writer.BeginChunk("FGameStartData");
-		writer.Write(CampaignName);
-		writer.Write(MapFilename);
-		writer.Write(Players.Count);
-		foreach (KeyValuePair<int, FGameStartPlayerData> player in Players)
-		{
-			writer.Write(player.Key);
-			player.Value.Save(writer);
-		}
-		writer.Write(PlayersToRandomize);
-		writer.Write(Seed);
-		writer.Write(GameGUID);
-		writer.Write(DifficultyModifier);
-		writer.Write(ChallengeIndex);
-		writer.Write(ChallengeIndexMin);
-		writer.Write(ChallengeIndexMax);
-		writer.Write(ChallengeDropshipLevel);
-		writer.Write(TrackGameRecord);
-		writer.EndChunk("FGameStartData");
-	}
-
-	public void Load(FBinReader reader)
-	{
-		if (reader.BeginChunk("FGameStartData"))
-		{
-			CampaignName = reader.ReadString();
-			MapFilename = reader.ReadString();
-			int num = reader.ReadInt();
-			while (num > 0)
-			{
-				int key = reader.ReadInt();
-				FGameStartPlayerData fGameStartPlayerData = new FGameStartPlayerData();
-				fGameStartPlayerData.Load(reader);
-				Players[key] = fGameStartPlayerData;
-				num--;
-			}
-			PlayersToRandomize = reader.ReadIntList();
-			Seed = reader.ReadInt();
-			GameGUID = reader.ReadString();
-			DifficultyModifier = reader.ReadFix64();
-			ChallengeIndex = reader.ReadInt();
-			ChallengeIndexMin = reader.ReadInt();
-			ChallengeIndexMax = reader.ReadInt();
-			ChallengeDropshipLevel = reader.ReadInt();
-			TrackGameRecord = reader.ReadBool();
-			if (reader.EndChunk("FGameStartData"))
-			{
-				return;
-			}
-		}
-		throw new FSavegameLoadException();
 	}
 }

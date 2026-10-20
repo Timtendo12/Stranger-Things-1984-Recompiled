@@ -52,16 +52,4 @@ public class FRequirementCanCompleteQuest : FPlayerStatsRequirement
 		}
 		return data.CanCompleteQuest(DBID, MustHaveQuest) ? EvaluateReturnCode.True : EvaluateReturnCode.False;
 	}
-
-	public override void SaveInternal(FSavegameWriter writer)
-	{
-		base.SaveInternal(writer);
-		writer.Write(DBID);
-	}
-
-	public override void LoadInternal(FSavegameReader reader)
-	{
-		base.LoadInternal(reader);
-		DBID = reader.ReadInt();
-	}
 }

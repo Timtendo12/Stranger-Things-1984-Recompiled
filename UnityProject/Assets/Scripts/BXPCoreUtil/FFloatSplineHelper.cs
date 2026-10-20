@@ -18,16 +18,6 @@ public class FFloatSplineHelper : ISplineHelper<float>
 		return a - b;
 	}
 
-	public float BinRead(FBinReader reader)
-	{
-		return reader.ReadFloat();
-	}
-
-	public void BinWrite(FBinWriter writer, float a)
-	{
-		writer.Write(a);
-	}
-
 	public static FHermiteSpline<float> CreateCatmullRom(float[] keys, float[] times, bool loopTangents)
 	{
 		return FHermiteSpline<float>.CreateCatmullRom(Instance, keys, times, loopTangents);

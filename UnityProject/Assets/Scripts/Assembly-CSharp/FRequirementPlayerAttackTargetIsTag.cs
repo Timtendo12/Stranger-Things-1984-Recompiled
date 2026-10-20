@@ -59,16 +59,4 @@ public class FRequirementPlayerAttackTargetIsTag : FPlayerStatsRequirement
 		}
 		return EvaluateReturnCode.True;
 	}
-
-	public override void SaveInternal(FSavegameWriter writer)
-	{
-		base.SaveInternal(writer);
-		writer.Write(Tag);
-	}
-
-	public override void LoadInternal(FSavegameReader reader)
-	{
-		base.LoadInternal(reader);
-		Tag = reader.ReadString();
-	}
 }

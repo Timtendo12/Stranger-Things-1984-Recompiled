@@ -701,16 +701,6 @@ public struct Fix64 : IEquatable<Fix64>, IComparable<Fix64>, IFixSplineInterp<Fi
 		return this * a;
 	}
 
-	public void BinWrite(FBinWriter writer)
-	{
-		writer.Write(this);
-	}
-
-	public void BinRead(FBinReader reader)
-	{
-		this = reader.ReadFix64();
-	}
-
 	public static Fix64 GetRangeValue(int seed, Fix64 min, Fix64 max, bool round)
 	{
 		if (min < Zero)

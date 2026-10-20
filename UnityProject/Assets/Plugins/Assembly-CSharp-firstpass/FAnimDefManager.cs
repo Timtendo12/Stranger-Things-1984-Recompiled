@@ -121,46 +121,6 @@ public class FAnimDefManager
 		return value;
 	}
 
-	public static void SaveData(FBinWriter writer)
-	{
-		writer.BeginChunk("AnimDefs.xml");
-		string text = mCurrentXmlData ?? FUtil.LoadTextAsset("Data/AnimDefs");
-		writer.Write(mXmlHash, true);
-		writer.Write(text);
-		writer.EndChunk("AnimDefs.xml");
-	}
-
-	public static void LoadData(FBinReader reader)
-	{
-		if (!reader.BeginChunk("AnimDefs.xml", true))
-		{
-			throw new System.IO.IOException();
-		}
-		byte[] array = reader.ReadByteArray();
-		FLog.UnityLog("FAnimDefManager loaded hash: " + FCoreUtil.HexString(mXmlHash) + ", savegame hash: " + FCoreUtil.HexString(array));
-		if (!FCoreUtil.CompareByteArrays(array, mXmlHash))
-		{
-			FLog.UnityLog("FAnimDefManager: load data from savegame.");
-			mXmlHash = array;
-			mCurrentXmlData = reader.ReadString();
-			XmlElement xmlElement = FCoreUtil.LoadXmlString(mCurrentXmlData);
-			if (xmlElement == null)
-			{
-				throw new System.IO.IOException();
-			}
-			LoadXml(xmlElement);
-			if (!reader.EndChunk("AnimDefs.xml", true))
-			{
-				throw new System.IO.IOException();
-			}
-		}
-		else
-		{
-			FLog.UnityLog("FAnimDefManager: no need to load data.");
-			reader.SkipRestOfChunk("AnimDefs.xml", true);
-		}
-	}
-
 	public static void RevertToCanonicalData()
 	{
 		Init();

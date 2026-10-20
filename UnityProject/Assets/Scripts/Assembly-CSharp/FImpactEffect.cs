@@ -176,19 +176,4 @@ public class FImpactEffect
 		}
 		return mSpawn.Offset;
 	}
-
-	public static void SaveRef(FBinWriter writer, FImpactEffect impactEffect)
-	{
-		writer.Write(impactEffect?.mName);
-	}
-
-	public static FImpactEffect LoadRef(FBinReader reader)
-	{
-		string text = reader.ReadString();
-		if (string.IsNullOrEmpty(text))
-		{
-			return null;
-		}
-		return FImpactEffectManager.GetImpactEffect(text);
-	}
 }

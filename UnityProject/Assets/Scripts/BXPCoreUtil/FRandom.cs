@@ -61,22 +61,6 @@ public class FRandom
 		return (max - min) * mMT.NextDouble(includeOne: true) + min;
 	}
 
-	public virtual FixVector3 RangeFixVector3(Fix64 min, Fix64 max)
-	{
-		Fix64 x = RangeFix64(min, max);
-		Fix64 y = RangeFix64(min, max);
-		Fix64 z = RangeFix64(min, max);
-		return new FixVector3(x, y, z);
-	}
-
-	public virtual FixVector3 RandomDirectionFixVector3()
-	{
-		Fix64 angle = RangeFix64(Fix64.Zero, Fix64.TwoPi);
-		Fix64 z = RangeFix64(Fix64.MinusOne, Fix64.One);
-		Fix64 r = Fix64.Sqrt(Fix64.One - z * z);
-		return new FixVector3(r * Fix64.Cos(angle), r * Fix64.Sin(angle), z);
-	}
-
 	public virtual bool RandBool()
 	{
 		return RangeInt(0, 1) == 1;
@@ -131,30 +115,8 @@ public class FRandom
 		return RangeFix64(min, max);
 	}
 
-	public virtual FixVector3 RangeFixVector3(Fix64 min, Fix64 max, string infoString)
-	{
-		return RangeFixVector3(min, max);
-	}
-
 	public virtual int NextInt()
 	{
 		return mMT.Next();
-	}
-
-	public virtual void Save(FBinWriter writer)
-	{
-		writer.BeginChunk("FRandom");
-		mMT.Save(writer);
-		writer.EndChunk("FRandom");
-	}
-
-	public virtual bool Load(FBinReader reader)
-	{
-		if (!reader.BeginChunk("FRandom"))
-		{
-			return false;
-		}
-		bool ok = mMT.Load(reader);
-		return reader.EndChunk("FRandom") & ok;
 	}
 }

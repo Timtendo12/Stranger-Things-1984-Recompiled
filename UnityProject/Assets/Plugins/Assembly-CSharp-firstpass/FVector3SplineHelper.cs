@@ -20,16 +20,6 @@ public class FVector3SplineHelper : ISplineHelper<Vector3>
 		return a - b;
 	}
 
-	public Vector3 BinRead(FBinReader reader)
-	{
-		return reader.ReadVector3();
-	}
-
-	public void BinWrite(FBinWriter writer, Vector3 a)
-	{
-		writer.Write(a);
-	}
-
 	public static FHermiteSpline<Vector3> CreateCatmullRom(Vector3[] keys, float[] times, bool loopTangents)
 	{
 		return FHermiteSpline<Vector3>.CreateCatmullRom(Instance, keys, times, loopTangents);

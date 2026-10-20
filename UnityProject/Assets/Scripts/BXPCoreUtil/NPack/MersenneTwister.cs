@@ -264,25 +264,5 @@ namespace NPack
 			uint b = GenerateUInt32() >> 6;
 			return ((double)a * 67108864.0 + (double)b + translate) * scale;
 		}
-
-		public void Save(FBinWriter writer)
-		{
-			writer.Write(_mt);
-			writer.Write(_mti);
-		}
-
-		public bool Load(FBinReader reader)
-		{
-			_mt = reader.ReadUIntArray();
-			_mti = reader.ReadShort();
-			return true;
-		}
-
-		public static MersenneTwister CreateFromReader(FBinReader reader)
-		{
-			MersenneTwister mersenneTwister = new MersenneTwister(0);
-			mersenneTwister.Load(reader);
-			return mersenneTwister;
-		}
 	}
 }

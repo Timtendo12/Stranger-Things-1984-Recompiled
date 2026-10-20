@@ -20,30 +20,4 @@ public class FGameStartPlayerData
 	{
 		FactionID = -1;
 	}
-
-	public void Save(FBinWriter writer)
-	{
-		writer.BeginChunk("FGameStartPlayerData");
-		writer.Write(PlayerName);
-		writer.Write(LocalPlayer);
-		writer.Write(FactionID);
-		writer.Write(DeckName);
-		writer.EndChunk("FGameStartPlayerData");
-	}
-
-	public void Load(FBinReader reader)
-	{
-		if (reader.BeginChunk("FGameStartPlayerData"))
-		{
-			PlayerName = reader.ReadString();
-			LocalPlayer = reader.ReadBool();
-			FactionID = reader.ReadInt();
-			DeckName = reader.ReadString();
-			if (reader.EndChunk("FGameStartPlayerData"))
-			{
-				return;
-			}
-		}
-		throw new FSavegameLoadException();
-	}
 }

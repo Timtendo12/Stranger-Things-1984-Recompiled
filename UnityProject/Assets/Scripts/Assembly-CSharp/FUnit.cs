@@ -1139,7 +1139,11 @@ public class FUnit : IAnimTagResponder
 					FRandom.Generic.SetSeed(index);
 					Transform lootT2 = current.Unit.GO.transform;
 					lootT2.position = Vector3.Lerp(lootT2.position, new Vector3(target.x, target.y, 0f), t);
-					Vector3 offset = FRandom.Generic.RandomDirectionFixVector3().ToVector3();
+					// FRandom.RandomDirectionFixVector3().ToVector3() inlined (FixVector3 is not ported).
+					Fix64 angle = FRandom.Generic.RangeFix64(Fix64.Zero, Fix64.TwoPi);
+					Fix64 dirZ = FRandom.Generic.RangeFix64(Fix64.MinusOne, Fix64.One);
+					Fix64 radius = Fix64.Sqrt(Fix64.One - dirZ * dirZ);
+					Vector3 offset = new Vector3((float)(radius * Fix64.Cos(angle)), (float)(radius * Fix64.Sin(angle)), (float)dirZ);
 					target = current.Unit.GO.transform.position + offset * 0.25f;
 				}
 			}

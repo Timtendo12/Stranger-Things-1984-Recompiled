@@ -5,8 +5,4 @@ public interface ISplineHelper<T>
 	T Subtract(T a, T b);
 
 	T MultiplyScalar(float a, T b);
-
-	void BinWrite(FBinWriter writer, T a);
-
-	T BinRead(FBinReader reader);
 }

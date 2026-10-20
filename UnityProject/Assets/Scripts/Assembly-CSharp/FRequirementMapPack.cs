@@ -51,16 +51,4 @@ public class FRequirementMapPack : FPlayerStatsRequirement
 		}
 		return (!(FApp.World.ProtoWorld.MapPack != MapPack)) ? EvaluateReturnCode.True : EvaluateReturnCode.False;
 	}
-
-	public override void SaveInternal(FSavegameWriter writer)
-	{
-		base.SaveInternal(writer);
-		writer.Write(MapPack);
-	}
-
-	public override void LoadInternal(FSavegameReader reader)
-	{
-		base.LoadInternal(reader);
-		MapPack = reader.ReadString();
-	}
 }

@@ -20,14 +20,6 @@ public class FApp
 		public static void ClearSaveGameClientInfo()
 		{
 		}
-
-		public static void SaveClientInfo(FSavegameWriter writer)
-		{
-		}
-
-		public static void LoadClientInfo(FSavegameReader reader)
-		{
-		}
 	}
 
 	public enum PerformanceQuality
@@ -107,8 +99,6 @@ public class FApp
 	private static bool mHandlingUserStateChange;
 
 	protected static bool mFirstDidBecomeActiveCall = true;
-
-	public static FMultiDictionary<string, string> CommandLineParameters;
 
 	public static GameObject UnityEventSystemObject;
 

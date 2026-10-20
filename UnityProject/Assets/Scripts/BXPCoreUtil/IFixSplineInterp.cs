@@ -5,8 +5,4 @@ public interface IFixSplineInterp<T>
 	T Subtract(T b);
 
 	T MultiplyScalar(Fix64 a);
-
-	void BinWrite(FBinWriter writer);
-
-	void BinRead(FBinReader reader);
 }

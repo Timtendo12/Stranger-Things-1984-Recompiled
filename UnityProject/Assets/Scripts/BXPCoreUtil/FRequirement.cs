@@ -2,7 +2,7 @@ using System.Xml;
 
 // Rewritten from libil2cpp.so 1.0.605 (FRequirement<> @ 0x1faeb10..0x1faee78, Ghidra vaddr).
 [SaveVersion(0)]
-public class FRequirement<ContextType> : ISaveRef
+public class FRequirement<ContextType>
 {
 	public bool Negate { get; protected set; }
 
@@ -92,15 +92,5 @@ public class FRequirement<ContextType> : ISaveRef
 		default:
 			return EvaluateReturnCode.NA;
 		}
-	}
-
-	public virtual void SaveInternal(FSavegameWriter writer)
-	{
-		writer.Write(Negate);
-	}
-
-	public virtual void LoadInternal(FSavegameReader reader)
-	{
-		Negate = reader.ReadBool();
 	}
 }

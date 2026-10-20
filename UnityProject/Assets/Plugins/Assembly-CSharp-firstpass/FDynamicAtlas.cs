@@ -22,18 +22,7 @@ public class FDynamicAtlas : FAtlas
 		public int CacheY;
 
 		public LinkedListNode<FDynamicAtlasEntry> mMRUNode;
-
-		public void Read(FBinReader reader)
-		{
-		}
-
-		public static FDynamicAtlasEntry CreateFromReader(FBinReader reader)
-		{
-			return null;
-		}
 	}
-
-	protected FBinReader mReader;
 
 	protected Dictionary<string, FDynamicAtlasEntry> mEntries;
 

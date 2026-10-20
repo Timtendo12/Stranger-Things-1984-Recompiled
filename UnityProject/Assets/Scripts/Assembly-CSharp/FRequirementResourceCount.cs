@@ -68,18 +68,4 @@ public class FRequirementResourceCount : FRequirementTwoValueIntOperator
 		}
 		return EvaluateCount(currentCount, base.Operator, base.Value1);
 	}
-
-	public override void SaveInternal(FSavegameWriter writer)
-	{
-		base.SaveInternal(writer);
-		writer.Write(ResourceName);
-		writer.Write(Variable);
-	}
-
-	public override void LoadInternal(FSavegameReader reader)
-	{
-		base.LoadInternal(reader);
-		ResourceName = reader.ReadString();
-		Variable = reader.ReadString();
-	}
 }

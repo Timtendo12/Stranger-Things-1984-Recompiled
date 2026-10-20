@@ -45,20 +45,4 @@ public abstract class FRequirementTwoValueIntOperator : FPlayerStatsRequirement
 		Operator = op;
 		return true;
 	}
-
-	public override void SaveInternal(FSavegameWriter writer)
-	{
-		base.SaveInternal(writer);
-		writer.Write(Value1);
-		writer.Write(Value2);
-		writer.WriteEnum(Operator);
-	}
-
-	public override void LoadInternal(FSavegameReader reader)
-	{
-		base.LoadInternal(reader);
-		Value1 = reader.ReadInt();
-		Value2 = reader.ReadInt();
-		Operator = reader.ReadEnum(MathOperator.None);
-	}
 }

@@ -90,20 +90,4 @@ public class FHermiteCurve<T>
 	{
 		SetTCB(previousKey, startKey, endKey, nextKey, previousT, startT, endT, nextT, 0f, 0f, 0f, 0f, 0f, 0f);
 	}
-
-	public void BinWrite(FBinWriter writer)
-	{
-		for (int i = 0; i < mControls.Length; i++)
-		{
-			Helper.BinWrite(writer, mControls[i]);
-		}
-	}
-
-	public void BinRead(FBinReader reader)
-	{
-		for (int i = 0; i < mControls.Length; i++)
-		{
-			mControls[i] = Helper.BinRead(reader);
-		}
-	}
 }

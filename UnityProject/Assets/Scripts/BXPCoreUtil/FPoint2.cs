@@ -72,18 +72,6 @@ public struct FPoint2
 		y = p.y;
 	}
 
-	public FPoint2(FixVector2 p)
-	{
-		x = Fix64.FloorToInt(p.x);
-		y = Fix64.FloorToInt(p.y);
-	}
-
-	public FPoint2(FixVector3 p)
-	{
-		x = Fix64.FloorToInt(p.x);
-		y = Fix64.FloorToInt(p.z);
-	}
-
 	public void Set(int newX, int newY)
 	{
 		x = newX;
@@ -113,16 +101,6 @@ public struct FPoint2
 	public static FPoint2 operator *(int v, FPoint2 p1)
 	{
 		return new FPoint2(p1.x * v, p1.y * v);
-	}
-
-	public FixVector3 ToFixVector3()
-	{
-		return new FixVector3((Fix64)(long)x, Fix64.Zero, (Fix64)(long)y);
-	}
-
-	public FixVector3 ToFixVector3(Fix64 offset)
-	{
-		return new FixVector3((Fix64)(long)x + offset, Fix64.Zero, (Fix64)(long)y + offset);
 	}
 
 	public override bool Equals(object o)

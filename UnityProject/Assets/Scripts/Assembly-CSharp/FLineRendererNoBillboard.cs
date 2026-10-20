@@ -49,10 +49,6 @@ public class FLineRendererNoBillboard : MonoBehaviour
 	{
 	}
 
-	public void SetPath(FixVector3 startPosition, FixVector3 endPosition)
-	{
-	}
-
 	public void SetSegment(int index, Vector3 pos)
 	{
 	}

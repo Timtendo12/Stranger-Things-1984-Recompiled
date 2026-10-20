@@ -57,26 +57,6 @@ public class FAnimDef
 		return GetAnimSet(animType)?.HasEntries() ?? false;
 	}
 
-	public static void SaveRef(FBinWriter writer, FAnimDef animDef)
-	{
-		if (animDef == null || string.IsNullOrEmpty(animDef.mName))
-		{
-			writer.Write(false);
-			return;
-		}
-		writer.Write(true);
-		writer.Write(animDef.mName);
-	}
-
-	public static FAnimDef LoadRef(FBinReader reader)
-	{
-		if (reader.ReadBool())
-		{
-			return FAnimDefManager.GetAnimDef(reader.ReadString());
-		}
-		return null;
-	}
-
 	public override string ToString()
 	{
 		return string.Format("[FAnimDef: Name={0}]", mName);
