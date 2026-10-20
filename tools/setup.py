@@ -257,7 +257,29 @@ def _post(opener, base, path, fields, timeout):
         raise ToolError(f'AssetRipper request {path} failed with HTTP {e.code}. See the AssetRipper log in {CACHE}.')
 
 
+def raise_open_file_limit():
+    # The game has ~2900 data files and AssetRipper opens them all at once; macOS shells default to a
+    # soft limit of 256 open files, which makes it fail with "Too many open files". The child process
+    # inherits our limit, so raise it as far as the hard limit allows.
+    try:
+        import resource
+    except ImportError:  # Windows
+        return
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    for want in (65536, 10240):  # macOS refuses RLIM_INFINITY and anything above kern.maxfilesperproc
+        if hard != resource.RLIM_INFINITY:
+            want = min(want, hard)
+        if want <= soft:
+            return
+        try:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (want, hard))
+            return
+        except (ValueError, OSError):
+            continue
+
+
 def run_assetripper(exe, staged, supported):
+    raise_open_file_limit()
     if EXPORT.exists():
         shutil.rmtree(EXPORT)
     with socket.socket() as s:
