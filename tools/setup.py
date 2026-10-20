@@ -264,11 +264,34 @@ def run_assetripper(exe, staged, supported):
         s.bind(('127.0.0.1', 0))
         port = s.getsockname()[1]
     log = CACHE / 'assetripper.log'
+    console = CACHE / 'assetripper_console.log'
     info(f'Running AssetRipper (this takes several minutes; log: {log})...')
+    out = open(console, 'w', encoding='utf-8', errors='replace')
     proc = subprocess.Popen([str(exe), '--port', str(port), '--headless', '--log-path', str(log)],
-                            cwd=str(exe.parent), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                            cwd=str(exe.parent), stdout=out, stderr=subprocess.STDOUT)
     base = f'http://127.0.0.1:{port}'
     opener = urllib.request.build_opener(_NoRedirect)
+
+    def failure(what):
+        # AssetRipper reports exceptions by logging them and redirecting to its home page, so the HTTP
+        # status cannot be trusted; show the errors from its console output instead.
+        out.flush()
+        text = console.read_text(encoding='utf-8', errors='replace') if console.exists() else ''
+        lines = text.splitlines()
+        hits = [i for i, l in enumerate(lines) if 'Error' in l or 'Exception' in l]
+        detail = '\n'.join(lines[hits[0]:hits[0] + 25]) if hits else '\n'.join(lines[-25:])
+        return ToolError(f'AssetRipper failed while {what}.\n--- AssetRipper output ---\n{detail}\n---\n'
+                         f'Full output: {console}\nLog: {log}')
+
+    def log_has(marker, wait=20):
+        end = time.time() + wait
+        while time.time() < end:
+            for p in (console, log):
+                if p.exists() and marker in p.read_text(encoding='utf-8', errors='replace'):
+                    return True
+            time.sleep(0.5)
+        return False
+
     try:
         deadline = time.time() + 120
         while True:
@@ -288,9 +311,13 @@ def run_assetripper(exe, staged, supported):
         t = time.time()
         info('  loading game files...')
         _post(opener, base, '/LoadFolder', {'Path': str(Path(staged).resolve())}, 3 * 3600)
+        if not log_has('Finished reading files'):
+            raise failure('reading the game files')
         info(f'  loaded in {time.time() - t:.0f}s; exporting Unity project...')
         t = time.time()
         _post(opener, base, '/Export/UnityProject', {'Path': str(EXPORT.resolve())}, 3 * 3600)
+        if not (EXPORT / 'ExportedProject' / 'Assets').is_dir():
+            raise failure('exporting the Unity project')
         info(f'  exported in {time.time() - t:.0f}s')
     finally:
         proc.terminate()
@@ -298,10 +325,8 @@ def run_assetripper(exe, staged, supported):
             proc.wait(15)
         except subprocess.TimeoutExpired:
             proc.kill()
-    root = EXPORT / 'ExportedProject'
-    if not (root / 'Assets').is_dir():
-        raise ToolError(f'AssetRipper produced no Unity project in {EXPORT}. Check {log} for errors.')
-    return root
+        out.close()
+    return EXPORT / 'ExportedProject'
 
 
 # ---------------------------------------------------------------- assemble into UnityProject
