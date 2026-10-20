@@ -30,7 +30,8 @@ component's license conflicts with the GPL, the component's own license governs 
 ## Game content
 
 Stranger Things is a trademark of Netflix, Inc. *Stranger Things: 1984* was developed by BonusXP
-and published by Netflix. This repository contains none of the game's assets (art, audio, video,
+and published by Netflix. Apart from the application icon (`UnityProject/Assets/PCIcon/GameIcon.png`,
+the game's store artwork), this repository contains none of the game's assets (art, audio, video,
 text, levels, scenes or data). `tools/setup.py` produces them on your own computer from an APK
 you supply. Do not commit or redistribute those generated files.
 

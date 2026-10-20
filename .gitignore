@@ -18,6 +18,9 @@
 !/UnityProject/Assets/ShaderIncludes.meta
 !/UnityProject/Assets/csc.rsp
 !/UnityProject/Assets/csc.rsp.meta
+# Application icon (exe, window and taskbar), set by Editor/PortBuild.cs.
+!/UnityProject/Assets/PCIcon/
+!/UnityProject/Assets/PCIcon.meta
 
 # Plugins: only the ported first-pass sources are ours; the stub DLLs come from setup.
 !/UnityProject/Assets/Plugins/

@@ -11,6 +11,8 @@ public static class PortBuild
 {
 	private const string ProductFile = "StrangerThings1984";
 
+	private const string IconPath = "Assets/PCIcon/GameIcon.png";
+
 	[MenuItem("Port/Build Windows (development)")]
 	public static void BuildWindowsMenu() => Build("windows", DefaultOut("windows"), true);
 
@@ -73,6 +75,7 @@ public static class PortBuild
 		PlayerSettings.resizableWindow = true;
 		PlayerSettings.allowFullscreenSwitch = false; // PCDisplay handles F11 and Alt+Enter
 		PlayerSettings.usePlayerLog = true;
+		SetIcon();
 		Directory.CreateDirectory(outDir);
 		BuildPlayerOptions options = new BuildPlayerOptions
 		{
@@ -88,6 +91,19 @@ public static class PortBuild
 		{
 			EditorApplication.Exit(report.summary.result == BuildResult.Succeeded ? 0 : 1);
 		}
+	}
+
+	// The default icon is what Unity puts in the Windows exe (and so the title bar and taskbar), the macOS .app and the
+	// Linux window.
+	private static void SetIcon()
+	{
+		Texture2D icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
+		if (icon == null)
+		{
+			Debug.LogWarning($"PortBuild: {IconPath} not found; building with Unity's default icon.");
+			return;
+		}
+		PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
 	}
 
 	private static string ModuleName(string target)
