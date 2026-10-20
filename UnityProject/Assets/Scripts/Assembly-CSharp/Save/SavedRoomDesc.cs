@@ -13,5 +13,7 @@ public class SavedRoomDesc
 
 	public SavedRoomDesc(SavedRoomDesc other)
 	{
+		ID = other.ID;
+		EntranceUsed = other.EntranceUsed;
 	}
 }
