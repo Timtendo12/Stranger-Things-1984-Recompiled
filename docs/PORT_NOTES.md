@@ -17,6 +17,7 @@ Differences between this PC port and the shipped Android build (1.0.605). Add an
 ## PC-only additions
 - `PCInput.cs` (keyboard/mouse/gamepad, menu focus ring) and `PCDisplay.cs` (F11 / Alt+Enter fullscreen, 16:9 letterbox). See [CONTROLS.md](CONTROLS.md).
 - Debug aids with the `-pcaudiolog` launch flag (F1-F11).
+- `-debug` (or `--debug`) launch flag: `PCDebugOverlay.cs` outlines every active 2D collider through the ported FDebugLineRenderer (green = unit, red = wall / solid tile, yellow = trigger). Example: `python tools/run.py -- -debug`.
 - `UserCommandsDelayed.txt` runs `<seconds>|<command>` lines after a world loads (test aid).
 
 ## Display, input, saves, hits
