@@ -1,0 +1,27 @@
+// PC port replacement (original shader program not recoverable from the Android build).
+Shader "BonusXP/UI/BXPUIDefault" {
+	Properties {
+		_MainTex ("Base (RGB)", 2D) = "white" {}
+
+	}
+	SubShader {
+		Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
+		ZWrite Off
+		Lighting Off
+		Cull Off
+		Blend SrcAlpha OneMinusSrcAlpha
+		Pass {
+			CGPROGRAM
+			#pragma vertex bxp_vert
+			#pragma fragment frag
+			#include "Assets/ShaderIncludes/BXPSprite.cginc"
+			fixed4 frag(bxp_v2f i) : SV_Target
+			{
+				fixed4 c = tex2D(_MainTex, i.uv) * i.color;
+				c.rgb = bxp_sepia(c.rgb + i.tint.rgb * c.a);
+				return c;
+			}
+			ENDCG
+		}
+	}
+}

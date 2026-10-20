@@ -1,0 +1,7 @@
+-r:System.Xml.dll
+-r:System.Xml.Linq.dll
+-r:System.Data.dll
+-r:System.Drawing.dll
+-r:System.Numerics.dll
+-r:System.Runtime.Serialization.dll
+-r:System.Configuration.dll

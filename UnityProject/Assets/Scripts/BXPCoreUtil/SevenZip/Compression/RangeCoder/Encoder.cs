@@ -1,0 +1,125 @@
+// Standard LZMA SDK (public domain), restored to match the shipped signatures.
+using System.IO;
+
+namespace SevenZip.Compression.RangeCoder
+{
+	internal class Encoder
+	{
+		public const uint kTopValue = 16777216u;
+
+		private Stream Stream;
+
+		public ulong Low;
+
+		public uint Range;
+
+		private uint _cacheSize;
+
+		private byte _cache;
+
+		private long StartPosition;
+
+		public void SetStream(Stream stream)
+		{
+			Stream = stream;
+		}
+
+		public void ReleaseStream()
+		{
+			Stream = null;
+		}
+
+		public void Init()
+		{
+			StartPosition = Stream.Position;
+			Low = 0uL;
+			Range = uint.MaxValue;
+			_cacheSize = 1u;
+			_cache = 0;
+		}
+
+		public void FlushData()
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				ShiftLow();
+			}
+		}
+
+		public void FlushStream()
+		{
+			Stream.Flush();
+		}
+
+		public void CloseStream()
+		{
+			Stream.Close();
+		}
+
+		public void Encode(uint start, uint size, uint total)
+		{
+			Low += start * (Range /= total);
+			Range *= size;
+			while (Range < kTopValue)
+			{
+				Range <<= 8;
+				ShiftLow();
+			}
+		}
+
+		public void ShiftLow()
+		{
+			if ((uint)Low < 0xFF000000u || (uint)(Low >> 32) == 1)
+			{
+				byte b = _cache;
+				do
+				{
+					Stream.WriteByte((byte)(b + (byte)(Low >> 32)));
+					b = byte.MaxValue;
+				}
+				while (--_cacheSize != 0);
+				_cache = (byte)((uint)Low >> 24);
+			}
+			_cacheSize++;
+			Low = (uint)Low << 8;
+		}
+
+		public void EncodeDirectBits(uint v, int numTotalBits)
+		{
+			for (int num = numTotalBits - 1; num >= 0; num--)
+			{
+				Range >>= 1;
+				Low += Range & (0 - ((v >> num) & 1));
+				if (Range < kTopValue)
+				{
+					Range <<= 8;
+					ShiftLow();
+				}
+			}
+		}
+
+		public void EncodeBit(uint size0, int numTotalBits, uint symbol)
+		{
+			uint num = (Range >> numTotalBits) * size0;
+			if (symbol == 0)
+			{
+				Range = num;
+			}
+			else
+			{
+				Low += num;
+				Range -= num;
+			}
+			while (Range < kTopValue)
+			{
+				Range <<= 8;
+				ShiftLow();
+			}
+		}
+
+		public long GetProcessedSizeAdd()
+		{
+			return _cacheSize + Stream.Position - StartPosition + 4;
+		}
+	}
+}

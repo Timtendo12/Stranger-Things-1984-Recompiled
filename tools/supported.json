@@ -1,0 +1,81 @@
+{
+  "title": "Stranger Things: 1984",
+  "package": "com.netflix.NGP.StrangerThings",
+  "versions": [
+    {
+      "version": "1.0.605",
+      "version_code": "261010701",
+      "unity": "6000.2.6f2",
+      "global_metadata_sha256": "64aed75af1479608c859e4ab26a4d8e6abfc61a0a392e41e40696d7a2a400dd1",
+      "libil2cpp_sha256": "ce4308aedc6c65b9bbc617572fd28fa48d3f31ffd5009dcd5dda11699b086abb"
+    }
+  ],
+  "assetripper": {
+    "version": "2.0.0",
+    "url": "https://github.com/AssetRipper/AssetRipper/releases/download/{version}/{file}",
+    "assets": {
+      "windows_x64": {"file": "AssetRipper_win_x64.zip", "sha256": "9a7ef0e7c5c3ea5b90b4e6d855e2d98d5f7ec8c3f9e26fccbc194c6a7b01baf7"},
+      "windows_arm64": {"file": "AssetRipper_win_arm64.zip", "sha256": "c2c3a335948aa0ecaf26baf22ac77e36993d1a1695b5db291cb63f66872627f1"},
+      "macos_x64": {"file": "AssetRipper_mac_x64.tar.xz", "sha256": "1b3836f135d16845cb57595fadff5739cbb86d28caaf621005b4301dba9b5a56"},
+      "macos_arm64": {"file": "AssetRipper_mac_arm64.tar.xz", "sha256": "237a6da404bf089c5e5c71a5a9a698c2ea580872292dfa5ce21e25fd1dbe9045"},
+      "linux_x64": {"file": "AssetRipper_linux_x64.tar.xz", "sha256": "6f5d4352d36795b944243eb3ec790ec37dbca6d6756e52605bc8616e042d384e"},
+      "linux_arm64": {"file": "AssetRipper_linux_arm64.tar.xz", "sha256": "8031752621d7fb27addab6108bad8bfbd43546bbb07b36912a987dfb4029c914"}
+    },
+    "settings": {
+      "ScriptContentLevel": "Level2",
+      "BundledAssetsExportMode": "DirectExport",
+      "DefaultVersion": "",
+      "TargetVersion": "",
+      "EnableStaticMeshSeparation": true,
+      "EnablePrefabOutlining": false,
+      "EnableAssetDeduplication": false,
+      "RemoveNullableAttributes": false,
+      "PublicizeAssemblies": false,
+      "IgnoreStreamingAssets": false,
+      "AudioExportFormat": "Default",
+      "ImageExportFormat": "Png",
+      "LightmapTextureExportFormat": "Yaml",
+      "SpriteExportMode": "Yaml",
+      "ShaderExportMode": "Dummy",
+      "TextExportMode": "Parse",
+      "ScriptLanguageVersion": "AutoSafe",
+      "ScriptExportMode": "Hybrid",
+      "ScriptTypesFullyQualified": false,
+      "PreferOriginalTextureExtension": true,
+      "ExportUnreadableAssets": false,
+      "SaveSettingsToDisk": false
+    }
+  },
+  "dll_patch": {
+    "from": "7cec85d7bea7798e",
+    "to": "b77a5c561934e089",
+    "files": [
+      "Backtrace.Unity.dll",
+      "Unity.Services.Analytics.dll",
+      "Unity.Services.Core.Internal.dll",
+      "Unity.VisualScripting.Core.dll",
+      "UnityEngine.UI.dll"
+    ]
+  },
+  "guid_pins": {
+    "Assets/PhysicsMaterial/DefaultPhysicsMat.physicMaterial": "a22a82590af618544bfbc73b1433bd7f",
+    "Assets/Scenes/Default.unity": "b54973ec3470cbd4cabeb6707b649e27"
+  },
+  "required": {
+    "Assets/Scenes/Default.unity": 0,
+    "Assets/Plugins/UnityEngine.UI.dll": 0,
+    "Assets/Resources/GameConfig.txt": 0,
+    "Assets/Resources/GameCommands.txt": 0,
+    "Assets/Resources/atlases": 30,
+    "Assets/Resources/data": 150,
+    "Assets/Resources/fonts": 25,
+    "Assets/Resources/languages": 52,
+    "Assets/Resources/prefabs": 63,
+    "Assets/Resources/shaders": 105,
+    "Assets/Resources/sounds": 179,
+    "Assets/Resources/spritesheets": 11513,
+    "Assets/Resources/video": 1,
+    "Assets/Resources/worldmaps": 708,
+    "Assets/Resources/worlds": 674
+  }
+}

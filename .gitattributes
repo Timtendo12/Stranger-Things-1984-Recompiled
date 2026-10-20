@@ -1,0 +1,5 @@
+* -text
+*.cs text eol=lf
+*.md text
+*.py text
+*.java text
