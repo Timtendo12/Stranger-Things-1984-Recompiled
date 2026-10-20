@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 // PC port (new): window / fullscreen handling and 16:9 letterboxing.
@@ -9,6 +10,10 @@ using UnityEngine;
 public class PCDisplay : MonoBehaviour
 {
 	public const float TargetAspect = 16f / 9f;
+
+	// Shown in the title bar. productName stays "StrangerThings1984": it names the data folder (saves, Player.log)
+	// and may not contain ':' on Windows.
+	public const string WindowTitle = "Stranger Things: 1984";
 
 	private const string PrefFullscreen = "PC.Fullscreen";
 
@@ -252,7 +257,204 @@ public class PCDisplay : MonoBehaviour
 			mWindowedH = Screen.height;
 		}
 		Camera.onPreCull += OnCameraPreCull;
+		SetWindowTitle();
 	}
+
+	// Again once the first scene is up, in case the native window did not exist yet during Awake (macOS / Linux).
+	private void Start()
+	{
+		SetWindowTitle();
+	}
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+	private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+	[DllImport("user32.dll")]
+	private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
+
+	[DllImport("user32.dll")]
+	private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+	private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder className, int maxCount);
+
+	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+	private static extern bool SetWindowText(IntPtr hWnd, string text);
+
+	private static IntPtr sGameWindow;
+
+	[AOT.MonoPInvokeCallback(typeof(EnumWindowsProc))]
+	private static bool FindGameWindow(IntPtr hWnd, IntPtr lParam)
+	{
+		GetWindowThreadProcessId(hWnd, out uint pid);
+		if (pid != (uint)lParam.ToInt64())
+		{
+			return true;
+		}
+		System.Text.StringBuilder cls = new System.Text.StringBuilder(64);
+		GetClassName(hWnd, cls, cls.Capacity);
+		if (cls.ToString() != "UnityWndClass")
+		{
+			return true;
+		}
+		sGameWindow = hWnd;
+		return false;
+	}
+
+	private static void SetWindowTitle()
+	{
+		try
+		{
+			sGameWindow = IntPtr.Zero;
+			EnumWindows(FindGameWindow, new IntPtr(System.Diagnostics.Process.GetCurrentProcess().Id));
+			if (sGameWindow != IntPtr.Zero)
+			{
+				SetWindowText(sGameWindow, WindowTitle);
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+#elif UNITY_STANDALONE_OSX && !UNITY_EDITOR
+	private const string ObjC = "/usr/lib/libobjc.A.dylib";
+
+	[DllImport(ObjC)]
+	private static extern IntPtr objc_getClass(string name);
+
+	[DllImport(ObjC)]
+	private static extern IntPtr sel_registerName(string name);
+
+	[DllImport(ObjC, EntryPoint = "objc_msgSend")]
+	private static extern IntPtr MsgSend(IntPtr receiver, IntPtr selector);
+
+	[DllImport(ObjC, EntryPoint = "objc_msgSend")]
+	private static extern IntPtr MsgSend(IntPtr receiver, IntPtr selector, IntPtr arg);
+
+	[DllImport(ObjC, EntryPoint = "objc_msgSend")]
+	private static extern IntPtr MsgSendIndex(IntPtr receiver, IntPtr selector, ulong index);
+
+	[DllImport(ObjC, EntryPoint = "objc_msgSend")]
+	private static extern ulong MsgSendCount(IntPtr receiver, IntPtr selector);
+
+	// [[NSApplication sharedApplication] windows] -> setTitle: on each (the player has one window).
+	private static void SetWindowTitle()
+	{
+		try
+		{
+			IntPtr app = MsgSend(objc_getClass("NSApplication"), sel_registerName("sharedApplication"));
+			IntPtr windows = app == IntPtr.Zero ? IntPtr.Zero : MsgSend(app, sel_registerName("windows"));
+			if (windows == IntPtr.Zero)
+			{
+				return;
+			}
+			IntPtr utf8 = Marshal.StringToCoTaskMemUTF8(WindowTitle);
+			try
+			{
+				IntPtr title = MsgSend(objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"), utf8);
+				ulong count = MsgSendCount(windows, sel_registerName("count"));
+				for (ulong i = 0; i < count; i++)
+				{
+					MsgSend(MsgSendIndex(windows, sel_registerName("objectAtIndex:"), i), sel_registerName("setTitle:"), title);
+				}
+			}
+			finally
+			{
+				Marshal.FreeCoTaskMem(utf8);
+			}
+		}
+		catch (Exception)
+		{
+		}
+	}
+#elif UNITY_STANDALONE_LINUX && !UNITY_EDITOR
+	private const string X11 = "libX11.so.6";
+
+	[DllImport(X11)]
+	private static extern IntPtr XOpenDisplay(IntPtr name);
+
+	[DllImport(X11)]
+	private static extern int XCloseDisplay(IntPtr display);
+
+	[DllImport(X11)]
+	private static extern ulong XDefaultRootWindow(IntPtr display);
+
+	[DllImport(X11)]
+	private static extern int XQueryTree(IntPtr display, ulong window, out ulong root, out ulong parent, out IntPtr children, out uint count);
+
+	[DllImport(X11)]
+	private static extern int XFetchName(IntPtr display, ulong window, out IntPtr name);
+
+	[DllImport(X11)]
+	private static extern int XStoreName(IntPtr display, ulong window, string name);
+
+	[DllImport(X11)]
+	private static extern ulong XInternAtom(IntPtr display, string name, int onlyIfExists);
+
+	[DllImport(X11)]
+	private static extern int XChangeProperty(IntPtr display, ulong window, ulong property, ulong type, int format, int mode, byte[] data, int count);
+
+	[DllImport(X11)]
+	private static extern int XFree(IntPtr data);
+
+	[DllImport(X11)]
+	private static extern int XFlush(IntPtr display);
+
+	// Renames the X11 window(s) still titled with the product name; sets both WM_NAME and the UTF-8 _NET_WM_NAME
+	// that modern window managers show.
+	private static void SetWindowTitle()
+	{
+		IntPtr display = IntPtr.Zero;
+		try
+		{
+			display = XOpenDisplay(IntPtr.Zero);
+			if (display == IntPtr.Zero)
+			{
+				return;
+			}
+			RenameWindows(display, XDefaultRootWindow(display), 0);
+			XFlush(display);
+		}
+		catch (Exception)
+		{
+		}
+		finally
+		{
+			if (display != IntPtr.Zero)
+			{
+				XCloseDisplay(display);
+			}
+		}
+	}
+
+	private static void RenameWindows(IntPtr display, ulong window, int depth)
+	{
+		if (XFetchName(display, window, out IntPtr namePtr) != 0 && namePtr != IntPtr.Zero)
+		{
+			string name = Marshal.PtrToStringAnsi(namePtr);
+			XFree(namePtr);
+			if (name == Application.productName)
+			{
+				XStoreName(display, window, WindowTitle);
+				byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(WindowTitle);
+				XChangeProperty(display, window, XInternAtom(display, "_NET_WM_NAME", 0), XInternAtom(display, "UTF8_STRING", 0), 8, 0, utf8, utf8.Length);
+			}
+		}
+		if (depth >= 3 || XQueryTree(display, window, out _, out _, out IntPtr children, out uint count) == 0 || children == IntPtr.Zero)
+		{
+			return;
+		}
+		for (int i = 0; i < count; i++)
+		{
+			RenameWindows(display, (ulong)Marshal.ReadInt64(children, i * 8), depth + 1);
+		}
+		XFree(children);
+	}
+#else
+	private static void SetWindowTitle()
+	{
+	}
+#endif
 
 	private void OnDestroy()
 	{
