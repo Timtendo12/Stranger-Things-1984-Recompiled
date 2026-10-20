@@ -38,4 +38,4 @@ No Netflix SDK code remains. A fixed local profile ("local-player", same save ke
 Language picker: Options > Language opens the (previously unused) FPageStringPicker; choosing a language rebuilds the HUD and returns to Options.
 
 ## Discord Rich Presence (PC-only addition)
-PCDiscord/DiscordIpc add optional Discord presence over the local IPC pipe; inert unless DISCORD_CLIENT_ID is set in .env at build time (compiled into DiscordConfig.Generated.cs, gitignored). Windows builds only.
+PCDiscord/DiscordIpc add optional Discord presence over the local IPC pipe; inert unless DISCORD_CLIENT_ID is set in .env at build time (compiled into DiscordConfig.Generated.cs, gitignored). Windows uses the discord-ipc-N named pipe; macOS and Linux use the discord-ipc-N Unix socket in $XDG_RUNTIME_DIR, $TMPDIR, $TMP, $TEMP or /tmp, including the Flatpak and Snap sub-folders.

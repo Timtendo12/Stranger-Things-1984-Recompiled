@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
-// PC port (new): minimal Discord Rich Presence client over the local discord-ipc-N named pipe (no native code, no packages).
+// PC port (new): minimal Discord Rich Presence client over the local discord-ipc-N endpoint (no native code, no packages):
+// a named pipe on Windows, a Unix domain socket on macOS / Linux.
 // All I/O runs on one background thread; the game thread only enqueues activity JSON. Everything is wrapped in try/catch.
 public class DiscordIpc
 {
@@ -27,7 +30,7 @@ public class DiscordIpc
 
 	private Thread mThread;
 
-	private NamedPipeClientStream mPipe;
+	private Stream mPipe;
 
 	public volatile bool Connected;
 
@@ -76,7 +79,7 @@ public class DiscordIpc
 			{
 				Monitor.Pulse(mLock);
 			}
-			NamedPipeClientStream pipe = mPipe;
+			Stream pipe = mPipe;
 			if (pipe != null)
 			{
 				pipe.Dispose();
@@ -154,7 +157,9 @@ public class DiscordIpc
 
 	private int mConnectedIndex;
 
-	private NamedPipeClientStream TryConnect()
+	private static readonly bool sUnix = Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX;
+
+	private Stream TryConnect()
 	{
 		for (int i = 0; i < 10 && !mStop; i++)
 		{
@@ -162,21 +167,88 @@ public class DiscordIpc
 			{
 				continue;
 			}
-			NamedPipeClientStream pipe = null;
+			Stream s = sUnix ? TryConnectUnix(i) : TryConnectPipe(i);
+			if (s != null)
+			{
+				mConnectedIndex = i;
+				return s;
+			}
+		}
+		return null;
+	}
+
+	private static Stream TryConnectPipe(int i)
+	{
+		NamedPipeClientStream pipe = null;
+		try
+		{
+			pipe = new NamedPipeClientStream(".", "discord-ipc-" + i.ToString(), PipeDirection.InOut);
+			pipe.Connect(150);
+			return pipe;
+		}
+		catch (Exception)
+		{
+			if (pipe != null)
+			{
+				try
+				{
+					pipe.Dispose();
+				}
+				catch (Exception)
+				{
+				}
+			}
+			return null;
+		}
+	}
+
+	// Same lookup as Discord's own SDKs: $XDG_RUNTIME_DIR, $TMPDIR, $TMP, $TEMP, then /tmp, each also with the
+	// Flatpak and Snap sub-folders that sandboxed Discord installs on Linux use.
+	private static List<string> UnixSocketPaths(int i)
+	{
+		string name = "discord-ipc-" + i.ToString();
+		List<string> roots = new List<string>();
+		foreach (string v in new[] { "XDG_RUNTIME_DIR", "TMPDIR", "TMP", "TEMP" })
+		{
+			string dir = Environment.GetEnvironmentVariable(v);
+			if (!string.IsNullOrEmpty(dir) && !roots.Contains(dir))
+			{
+				roots.Add(dir);
+			}
+		}
+		if (!roots.Contains("/tmp"))
+		{
+			roots.Add("/tmp");
+		}
+		List<string> paths = new List<string>();
+		foreach (string root in roots)
+		{
+			paths.Add(Path.Combine(root, name));
+			paths.Add(Path.Combine(Path.Combine(root, "app/com.discordapp.Discord"), name));
+			paths.Add(Path.Combine(Path.Combine(root, "snap.discord"), name));
+		}
+		return paths;
+	}
+
+	private static Stream TryConnectUnix(int i)
+	{
+		foreach (string path in UnixSocketPaths(i))
+		{
+			// no File.Exists pre-check: whether it reports socket files differs between runtimes; a missing path fails fast
+			Socket socket = null;
 			try
 			{
-				pipe = new NamedPipeClientStream(".", "discord-ipc-" + i.ToString(), PipeDirection.InOut);
-				pipe.Connect(150);
-				mConnectedIndex = i;
-				return pipe;
+				socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+				socket.Connect(new UnixEndPoint(path));
+				return new NetworkStream(socket, true);
 			}
 			catch (Exception)
 			{
-				if (pipe != null)
+				if (socket != null)
 				{
 					try
 					{
-						pipe.Dispose();
+						socket.Close();
 					}
 					catch (Exception)
 					{
@@ -185,6 +257,55 @@ public class DiscordIpc
 			}
 		}
 		return null;
+	}
+
+	// AF_UNIX endpoint, equivalent to Mono.Posix's UnixEndPoint (that assembly is not available to Unity players).
+	// SocketAddress layout: 2 bytes address family (written by SocketAddress), then the NUL-terminated path.
+	private sealed class UnixEndPoint : EndPoint
+	{
+		private readonly string mPath;
+
+		public UnixEndPoint(string path)
+		{
+			mPath = path;
+		}
+
+		public override AddressFamily AddressFamily
+		{
+			get { return AddressFamily.Unix; }
+		}
+
+		public override SocketAddress Serialize()
+		{
+			byte[] bytes = Encoding.UTF8.GetBytes(mPath);
+			SocketAddress sa = new SocketAddress(AddressFamily.Unix, 2 + bytes.Length + 1);
+			for (int i = 0; i < bytes.Length; i++)
+			{
+				sa[2 + i] = bytes[i];
+			}
+			sa[2 + bytes.Length] = 0;
+			return sa;
+		}
+
+		public override EndPoint Create(SocketAddress socketAddress)
+		{
+			int n = 0;
+			while (2 + n < socketAddress.Size && socketAddress[2 + n] != 0)
+			{
+				n++;
+			}
+			byte[] bytes = new byte[n];
+			for (int i = 0; i < n; i++)
+			{
+				bytes[i] = socketAddress[2 + i];
+			}
+			return new UnixEndPoint(Encoding.UTF8.GetString(bytes));
+		}
+
+		public override string ToString()
+		{
+			return mPath;
+		}
 	}
 
 	private static void Send(Stream s, int op, string json)
@@ -202,7 +323,7 @@ public class DiscordIpc
 		{
 			try
 			{
-				NamedPipeClientStream pipe = TryConnect();
+				Stream pipe = TryConnect();
 				if (pipe == null)
 				{
 					mSkipMask = 0;

@@ -100,9 +100,7 @@ public class PCDiscord : MonoBehaviour
 		mClientId = DiscordConfig.ClientId;
 		mLargeImage = DiscordConfig.LargeImageKey;
 		mShowStats = true;
-		// DiscordIpc talks to Discord's Windows named pipe; macOS/Linux use a Unix socket, not implemented yet
-		bool windows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
-		mEnabled = windows && mClientId.Length > 0;
+		mEnabled = mClientId.Length > 0;
 	}
 
 	private void OnApplicationQuit()

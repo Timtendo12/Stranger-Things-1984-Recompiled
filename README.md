@@ -21,7 +21,9 @@ Scientist. Known gaps:
   plainer than on Android.
 - **Untested gamepads.** Gamepad support is written for the Xbox/XInput layout and is untested on
   real hardware. Button mapping on macOS and Linux may be off; see [docs/CONTROLS.md](docs/CONTROLS.md).
-- **Windows-only extras.** Optional Discord Rich Presence only works on Windows.
+- **Discord Rich Presence** is optional. It works over Discord's local IPC: a named pipe on
+  Windows, a Unix socket on macOS and Linux (including Flatpak and Snap installs). Only the
+  Windows path has been tried so far.
 - **Single instance.** Only one copy of the game can run at a time.
 
 See [docs/PORT_NOTES.md](docs/PORT_NOTES.md) for intentional differences from the Android version and
@@ -152,7 +154,7 @@ override it.
 | Setting | Purpose |
 |---|---|
 | `UNITY_EDITOR` | Path to the Unity editor executable, if it is not in Unity Hub's default location |
-| `DISCORD_CLIENT_ID` | Numeric Discord application id to enable Rich Presence (Windows only). Empty means off |
+| `DISCORD_CLIENT_ID` | Numeric Discord application id to enable Rich Presence. Empty means off |
 | `DISCORD_LARGE_IMAGE_KEY` | Rich Presence image key (optional) |
 | `DISCORD_ENABLED` | `false` builds without presence |
 
@@ -177,13 +179,24 @@ You can also start the built executable directly. Controls are listed in
 
 ### macOS
 
+Building on the Mac itself is the simplest option. Xcode is not needed, because the port uses
+the Mono backend.
+
 The app is not signed or notarized. If macOS says it is damaged or cannot be opened, run this
 once:
 
 ```sh
 xattr -dr com.apple.quarantine dist/macos/StrangerThings1984.app
-codesign --force --deep --sign - dist/macos/StrangerThings1984.app   # needed if you copied it from another computer
 open dist/macos/StrangerThings1984.app
+```
+
+If you cross-built the app on Windows or Linux and copied it to a Mac, also restore the
+executable flag and add an ad-hoc signature. Apple silicon refuses to run unsigned code:
+
+```sh
+chmod +x StrangerThings1984.app/Contents/MacOS/StrangerThings1984
+xattr -dr com.apple.quarantine StrangerThings1984.app
+codesign --force --deep --sign - StrangerThings1984.app
 ```
 
 ### Linux
@@ -225,7 +238,7 @@ Build errors are summarized on screen. The full log is in `dist/logs/`. The setu
 - **Testing coverage.** Windows is tested end to end. macOS and Linux builds are produced by the
   same pipeline, but get less testing.
 - **Gamepads.** Mapping on macOS and Linux may be incomplete (legacy Unity input manager).
-- **Discord Rich Presence.** Windows only.
+- **Discord Rich Presence on macOS and Linux** is implemented but untested.
 - **Placeholder shaders.** Some original shaders are compiled-only in the APK. AssetRipper exports
   them as placeholders, and the port provides hand-written replacements for the ones the game
   visibly needs.
