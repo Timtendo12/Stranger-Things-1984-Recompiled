@@ -259,6 +259,7 @@ Build errors are summarized on screen. The full log is in `dist/logs/`. The setu
 ## Repository layout
 
 ```
+build_*.sh/.bat   one-step setup + build per OS (wrappers around tools/)
 tools/            setup.py, build.py, run.py, fastcheck.py (dev compile check), supported.json
 UnityProject/     Unity project: ported C# (Assets/Scripts, Assets/Plugins/Assembly-CSharp-firstpass),
                   editor build script, replacement shaders, project settings, packages.
