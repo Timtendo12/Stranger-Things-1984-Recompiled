@@ -1,80 +1,48 @@
-using System.Collections.Generic;
 using System.Xml;
 
+// Rewritten from libil2cpp.so 1.0.605 (FXmlElementExtensionsCoreUtilTypes.GetAttrib @ 0x1895a4c..0x1895e10, Ghidra vaddr).
+// Only the Fix64 and FPoint2 overloads are kept; the FixVector2/FixVector3 ones and the Fix64 writers were never called.
 public static class FXmlElementExtensionsCoreUtilTypes
 {
 	public static bool GetAttrib(this XmlElement element, string attribName, ref Fix64 result)
 	{
+		if (element.GetAttribute(attribName).TryParseFix64(out Fix64 val, Fix64.Zero))
+		{
+			result = val;
+			return true;
+		}
 		return false;
 	}
 
 	public static bool GetAttrib(this XmlElement element, string attribName, Fix64 result, Fix64 defaultResult)
 	{
-		return false;
+		return element.GetAttribute(attribName).TryParseFix64(out result, defaultResult);
 	}
 
 	public static Fix64 GetAttrib(this XmlElement element, string attribName, Fix64 defaultResult)
 	{
-		return default;
-	}
-
-	public static bool GetAttrib(this XmlElement element, string attribName, ref FixVector3 result)
-	{
-		return false;
-	}
-
-	public static bool GetAttrib(this XmlElement element, string attribName, ref FixVector3 result, FixVector3 defaultResult)
-	{
-		return false;
-	}
-
-	public static FixVector3 GetAttrib(this XmlElement element, string attribName, FixVector3 defaultResult)
-	{
-		return default;
-	}
-
-	public static bool GetAttrib(this XmlElement element, string attribName, ref FixVector2 result)
-	{
-		return false;
-	}
-
-	public static bool GetAttrib(this XmlElement element, string attribName, ref FixVector2 result, FixVector2 defaultResult)
-	{
-		return false;
-	}
-
-	public static FixVector2 GetAttrib(this XmlElement element, string attribName, FixVector2 defaultResult)
-	{
-		return default;
+		element.GetAttribute(attribName).TryParseFix64(out Fix64 val, defaultResult);
+		return val;
 	}
 
 	public static bool GetAttrib(this XmlElement element, string attribName, ref FPoint2 result)
 	{
+		if (element.GetAttribute(attribName).TryParseFPoint2(out FPoint2 val, default))
+		{
+			result = val;
+			return true;
+		}
 		return false;
 	}
 
 	public static bool GetAttrib(this XmlElement element, string attribName, ref FPoint2 result, FPoint2 defaultResult)
 	{
-		return false;
+		return element.GetAttribute(attribName).TryParseFPoint2(out result, defaultResult);
 	}
 
 	public static FPoint2 GetAttrib(this XmlElement element, string attribName, FPoint2 defaultResult)
 	{
-		return default;
-	}
-
-	public static XmlElement AddChild(this XmlElement element, string childName, Fix64 childValue, params object[] attributePairs)
-	{
-		return null;
-	}
-
-	public static XmlElement AddChildDict(this XmlElement element, string childName, Dictionary<string, Fix64> dict, string keyName = "Key", string valueName = "Value", string entryName = "Entry")
-	{
-		return null;
-	}
-
-	public static XmlAttribute AddAttribute(this XmlElement element, string attribName, Fix64 attribValue)
-	{
-		return null;
+		element.GetAttribute(attribName).TryParseFPoint2(out FPoint2 val, defaultResult);
+		return val;
 	}
 }
