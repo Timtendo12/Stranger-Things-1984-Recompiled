@@ -72,7 +72,7 @@ public class PCDiscord : MonoBehaviour
 
 	private void Awake()
 	{
-		mDebugLog = Array.IndexOf(Environment.GetCommandLineArgs(), "-pcaudiolog") >= 0;
+		mDebugLog = PCDebug.Enabled;
 		mStart = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 		try
 		{

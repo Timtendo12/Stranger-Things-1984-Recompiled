@@ -19,8 +19,6 @@ public class PCInput : MonoBehaviour
 
 	private static PCInput sInstance;
 
-	private static bool sAudioLog;
-
 	private bool mAxesBroken;
 
 	private bool mDpadBroken;
@@ -62,7 +60,6 @@ public class PCInput : MonoBehaviour
 		{
 			return;
 		}
-		sAudioLog = Array.IndexOf(Environment.GetCommandLineArgs(), "-pcaudiolog") >= 0;
 		GameObject go = new GameObject("PCInput");
 		DontDestroyOnLoad(go);
 		sInstance = go.AddComponent<PCInput>();
@@ -165,7 +162,7 @@ public class PCInput : MonoBehaviour
 
 	private static bool sSingleHit;
 
-	// debug (-pcaudiolog, F6): hit the boss of the current room every 0.7 s with the player's weapon until it is gone.
+	// debug (-debug, F6): hit the boss of the current room every 0.7 s with the player's weapon until it is gone.
 	private System.Collections.IEnumerator BeatBoss()
 	{
 		mBossBeating = true;
@@ -197,7 +194,7 @@ public class PCInput : MonoBehaviour
 
 	private float mNextAudioLog;
 
-	// Diagnostic: launch with -pcaudiolog to print the playing AudioSources every 4 s into the player log.
+	// Diagnostic: launch with -debug to print the playing AudioSources every 4 s into the player log.
 	private void LogAudio()
 	{
 		if (Time.unscaledTime < mNextAudioLog)
@@ -219,7 +216,7 @@ public class PCInput : MonoBehaviour
 
 	private void Update()
 	{
-		if (sAudioLog)
+		if (PCDebug.Enabled)
 		{
 			LogAudio();
 		}
@@ -228,11 +225,11 @@ public class PCInput : MonoBehaviour
 		{
 			return;
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F8) && FWorld.Player != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F8) && FWorld.Player != null)
 		{
 			FWorld.Player.SetHP(0); // debug: test the death / retry flow
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F11) && FWorld.Player != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.Home) && FWorld.Player != null)
 		{
 			// debug: cast the guard-cone ray from the player in the four directions and report the first non-passable tile hit
 			Vector3 pp = FWorld.Player.Position;
@@ -251,7 +248,7 @@ public class PCInput : MonoBehaviour
 				Debug.Log(info);
 			}
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F10) && FWorld.Player != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F10) && FWorld.Player != null)
 		{
 			// debug: teleport the player into the Library boss room (tile 24,3)
 			FWorld.Player.AI.StopActions();
@@ -259,12 +256,12 @@ public class PCInput : MonoBehaviour
 			FWorld.Player.SetTilePosition(new FPoint2(24, 3), true);
 			Debug.Log("PCTeleport room=" + FApp.World.CurrentRoom.ProtoRoom.Name);
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F12) && FApp.PlayerData != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F12) && FApp.PlayerData != null)
 		{
 			// debug: exercise FApp.UpdateVideoMode (resolution keep / revert dialog)
 			FApp.PlayerData.SetResolution(1000, 800, 60, false, true);
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F1) && FApp.World != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F1) && FApp.World != null)
 		{
 			// debug: classify every tile of every room (+1 margin): . passable, X blocked by a unit, # wall (collider), ~ no tile
 			for (int r = 0; r < FApp.World.Rooms.Count; r++)
@@ -284,33 +281,33 @@ public class PCInput : MonoBehaviour
 				}
 			}
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F2) && FWorld.Player != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F2) && FWorld.Player != null)
 		{
 			// debug: knock the player one tile to the left like a thrown vial would
 			FWorld.Player.OnAttacked(FWorld.Player, 1, Vector2.left, 1, true);
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F3) && FWorld.Player != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F3) && FWorld.Player != null)
 		{
 			// debug: single step left into whatever is there (e.g. a laser beam)
 			FPoint2 tp = FWorld.Player.TilePosition;
 			FWorld.Player.AI.StopActions();
 			FWorld.Player.AI.DoMoveToPoint(new FPoint2(tp.x - 1, tp.y), 0, false, true, true, string.Empty);
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F4) && FWorld.Player != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F4) && FWorld.Player != null)
 		{
 			FWorld.Player.ProtoUnit.SetDamageTakenModifier(0f); // debug: invulnerable
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F5) && !mBossBeating)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F5) && !mBossBeating)
 		{
 			sSingleHit = true; // debug: one boss hit per F5
 			StartCoroutine(BeatBoss());
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F6) && FWorld.Player != null && FApp.World.CurrentRoom != null && !mBossBeating)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F6) && FWorld.Player != null && FApp.World.CurrentRoom != null && !mBossBeating)
 		{
 			sSingleHit = false;
 			StartCoroutine(BeatBoss());
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F7) && FWorld.Player != null && FApp.World.CurrentRoom != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F7) && FWorld.Player != null && FApp.World.CurrentRoom != null)
 		{
 			// debug: dump the 9 x 11 tiles around the player
 			FPoint2 pp = FWorld.Player.TilePosition;
@@ -347,9 +344,9 @@ public class PCInput : MonoBehaviour
 				}
 			}
 		}
-		if (sAudioLog && Input.GetKeyDown(KeyCode.F9) && FApp.PlayerStats != null)
+		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F9) && FApp.PlayerStats != null)
 		{
-			// debug (-pcaudiolog): give coins and pudding for shop / ability tests
+			// debug (-debug): give coins and pudding for shop / ability tests
 			FApp.PlayerStats.SetCoins(100);
 			FApp.PlayerStats.SetPudding(5);
 		}
@@ -557,7 +554,7 @@ public class PCInput : MonoBehaviour
 		}
 		if (target == pos)
 		{
-			if (sAudioLog)
+			if (PCDebug.Enabled)
 			{
 				FPoint2 n1 = new FPoint2(pos.x + dir.x, pos.y + dir.y);
 				FTile t1 = room.GetTile(n1);
@@ -577,7 +574,7 @@ public class PCInput : MonoBehaviour
 		player.AI.StopActions();
 		mMoveIssued = player.AI.DoMoveToPoint(target, 0, false, true, true, string.Empty);
 		mLastIssuedDir = dir;
-		if (sAudioLog)
+		if (PCDebug.Enabled)
 		{
 			Debug.Log("PCMove issue from " + pos.x + "," + pos.y + " to " + target.x + "," + target.y + " ok=" + mMoveIssued + " input=" + FApp.World.InputEnabled);
 		}

@@ -16,8 +16,7 @@ Differences between this PC port and the shipped Android build (1.0.605). Add an
 
 ## PC-only additions
 - `PCInput.cs` (keyboard/mouse/gamepad, menu focus ring) and `PCDisplay.cs` (F11 / Alt+Enter fullscreen, 16:9 letterbox). See [CONTROLS.md](CONTROLS.md).
-- Debug aids with the `-pcaudiolog` launch flag (F1-F11).
-- `-debug` (or `--debug`) launch flag: `PCDebugOverlay.cs` outlines every active 2D collider through the ported FDebugLineRenderer (green = unit, red = wall / solid tile, yellow = trigger). Example: `python tools/run.py -- -debug`.
+- Developer mode with the `-debug` (or `--debug`) launch flag, e.g. `python tools/run.py -- -debug`. See [Debug mode](#debug-mode).
 - `UserCommandsDelayed.txt` runs `<seconds>|<command>` lines after a world loads (test aid).
 
 ## Display, input, saves, hits
@@ -28,7 +27,28 @@ Differences between this PC port and the shipped Android build (1.0.605). Add an
 - FTile collider GameObjects are named "{0}, {1}" (the previous "({0}, {1})" broke FPoint2.Parse, so tile colliders were never mapped back to tiles: guard cones ignored walls).
 - Display: PCDisplay replaces Screen.width/height for the game (FScreen, FUtil, FTouch, FCamera, FWorld, FWorldTheater) and letterboxes to 16:9 through a render target; the forced-16:9 resize code in FScreen.Update was removed.
 - Input: PCInput adds keyboard / gamepad control and menu focus navigation (see [CONTROLS.md](CONTROLS.md)). FPageLegendWorld.HandleInput opens the pause menu on Esc only when it is the top page.
-- Debug aids that only exist with the `-pcaudiolog` command-line flag: F1 room dump, F2..F12 test keys.
+
+## Debug mode
+
+Launching with `-debug` (or `--debug`) turns on (`PCDebug.Enabled`):
+- **Collider overlay** (`PCDebug.cs`, drawn with the ported FDebugLineRenderer): green = unit, red = wall / solid tile, yellow = trigger.
+- **Logging** to the player log: playing AudioSources every 4 s, blocked / issued keyboard moves, Discord Rich Presence errors.
+- **Test keys** (`PCInput.cs`):
+
+| Key | Action |
+|---|---|
+| F1 | Dump every room's tiles to the log (`.` passable, `X` unit, `#` wall, `~` no tile) |
+| F2 | Knock the player one tile left (thrown-vial knockback) |
+| F3 | Step the player one tile left into whatever is there |
+| F4 | Player invulnerable |
+| F5 / F6 | Hit the room's boss once / every 0.7 s until it is gone |
+| F7 | Dump the 9 x 11 tiles around the player |
+| F8 | Player HP to 0 (death / retry flow) |
+| F9 | 100 coins and pudding |
+| F10 | Teleport to the Library boss room |
+| F12 | Switch to 1000 x 800 (resolution keep / revert dialog) |
+| Home | Cast the guard sight-line ray in four directions and log the first wall hit |
+| Insert | Force a Discord presence update |
 
 ## Recovered values
 Values re-read from the disassembly changed: name generator whole-name chance (1/101), tabbed page transitions linear, shop price label colour (red/black with gray shadow), game-mode info and conflict popup separators "\n", FSoundManager default volumes, FTextSpanImage wrap string " ".

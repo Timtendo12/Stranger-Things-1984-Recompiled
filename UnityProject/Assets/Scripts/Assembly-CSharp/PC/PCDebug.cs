@@ -1,11 +1,15 @@
 using System;
 using UnityEngine;
 
-// PC port (new): launch with -debug (or --debug) to draw every active 2D physics collider through FDebugLineRenderer.
-// Green = unit, red = other solid collider (walls, obstructing tiles), yellow = trigger.
+// PC port (new): developer mode, enabled by launching with -debug (or --debug).
+// Draws every active 2D physics collider through FDebugLineRenderer: green = unit, red = other solid collider
+// (walls, obstructing tiles), yellow = trigger. PCInput (F1-F12 / Home test keys, move and audio logging) and
+// PCDiscord (Insert forces a presence update, error logging) check PCDebug.Enabled too.
 [DefaultExecutionOrder(200)]
-public class PCDebugOverlay : MonoBehaviour
+public class PCDebug : MonoBehaviour
 {
+	public static readonly bool Enabled = HasArg("-debug") || HasArg("--debug");
+
 	private static readonly Color UnitColor = new Color(0.2f, 1f, 0.2f, 0.9f);
 
 	private static readonly Color SolidColor = new Color(1f, 0.25f, 0.25f, 0.9f);
@@ -17,14 +21,18 @@ public class PCDebugOverlay : MonoBehaviour
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 	private static void Bootstrap()
 	{
-		string[] args = Environment.GetCommandLineArgs();
-		if (!Application.isPlaying || (Array.IndexOf(args, "-debug") < 0 && Array.IndexOf(args, "--debug") < 0))
+		if (!Application.isPlaying || !Enabled)
 		{
 			return;
 		}
-		GameObject go = new GameObject("PCDebugOverlay");
+		GameObject go = new GameObject("PCDebug");
 		DontDestroyOnLoad(go);
-		go.AddComponent<PCDebugOverlay>();
+		go.AddComponent<PCDebug>();
+	}
+
+	private static bool HasArg(string name)
+	{
+		return Array.IndexOf(Environment.GetCommandLineArgs(), name) >= 0;
 	}
 
 	private void LateUpdate()
