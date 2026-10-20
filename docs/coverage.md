@@ -7,7 +7,7 @@ Class = one .cs file. rewritten = has "Rewritten from" header; stub-bodied = eve
 | Assembly | classes | rewritten | stub-bodied | other (data/hand) | methods | stub methods |
 |---|---|---|---|---|---|---|
 | Assembly-CSharp-firstpass | 327 | 225 | 45 | 57 | 1915 | 277 |
-| Assembly-CSharp | 408 | 278 | 46 | 84 | 2884 | 251 |
+| Assembly-CSharp | 405 | 280 | 42 | 83 | 2868 | 217 |
 | BXPCoreUtil | 86 | 39 | 0 | 47 | 623 | 0 |
 
 ## Stub-bodied classes
@@ -17,14 +17,10 @@ Class = one .cs file. rewritten = has "Rewritten from" header; stub-bodied = eve
 - Assembly-CSharp/AudioOffset (2 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
 - Assembly-CSharp/BRDFLookupTexture (8 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
 - Assembly-CSharp/CRTEffect (8 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
-- Assembly-CSharp/DeferredDecalRenderer (5 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
-- Assembly-CSharp/DeferredDecalSystem (3 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
 - Assembly-CSharp/FAppInit (1 methods) - dead: debug / editor-only tooling, never instantiated at runtime
 - Assembly-CSharp/FBillboard (1 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
 - Assembly-CSharp/FDebugCollisionVolumeRenderer (6 methods) - dead: debug / editor-only tooling, never instantiated at runtime
 - Assembly-CSharp/FDebugFileEditor (1 methods) - dead: debug / editor-only tooling, never instantiated at runtime
-- Assembly-CSharp/FDebugLineRenderer (18 methods) - dead: debug / editor-only tooling, never instantiated at runtime
-- Assembly-CSharp/FDebugLineRendererMeshObject (8 methods) - dead: debug / editor-only tooling, never instantiated at runtime
 - Assembly-CSharp/FExplosionForceInArea (1 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
 - Assembly-CSharp/FFontMesh (3 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
 - Assembly-CSharp/FFontMeshTextLine (1 methods) - dead: no references in code, scenes or prefabs (legacy 3D / rendering / UI helper from the original engine)
@@ -108,7 +104,6 @@ Class = one .cs file. rewritten = has "Rewritten from" header; stub-bodied = eve
 
 Dead 3D / network / savegame code with no callers on PC; left as stubs on purpose.
 
-- Assembly-CSharp/Decal (6 methods)
 - Assembly-CSharp/FDownloadCacheEntry (6 methods)
 - Assembly-CSharp/FDownloadEntry (8 methods)
 - Assembly-CSharp/FDownloadManager (10 methods)
@@ -151,4 +146,4 @@ Signature-only stubs with no runtime callers were deleted rather than kept: the 
 (FBinReader/FBinWriter, FSavegameReader/Writer, FSaveRef and the Save/Load(FBin*) members that used it; real saves
 go through FSaveFile as JSON + LZMA), fixed-point 3D math (FixVector2/3/4, FixQuaternion, FixMatrix4x4, FFixAABB*,
 FFixHermite*, FFixTransform, Fix8, Fix16), the Unity.IO.Compression deflate/gzip port, ZipStorer, CombinationStream,
-the LZMA SDK command-line parser and unreferenced BXPCoreUtil helpers. Their signatures remain in the original decompile.
+the LZMA SDK command-line parser, the deferred decal system (Decal, DeferredDecalSystem/Renderer; no scene, prefab or code used it) and unreferenced BXPCoreUtil helpers. Their signatures remain in the original decompile.
