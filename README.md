@@ -50,21 +50,30 @@ See [docs/PORT_NOTES.md](docs/PORT_NOTES.md) for intentional differences from th
 
 ## Quick start
 
+Install the [requirements](#requirements), clone the repository, then run the build script for
+your OS with the path to your APK:
+
 ```sh
 git clone https://github.com/Timtendo12/Stranger-Things-1984-Recompiled.git
 cd Stranger-Things-1984-Recompiled
-
-# 1. Generate the game assets from your own APK (takes about a minute)
-python tools/setup.py path/to/StrangerThings1984.apkm
-
-# 2. Build for this computer's OS (the first build imports ~13,000 assets; allow 2-30 minutes)
-python tools/build.py
-
-# 3. Play
-python tools/run.py
 ```
 
-On macOS and Linux, use `python3` if `python` is not Python 3.
+| OS | Command | Then start the game |
+|---|---|---|
+| Windows | `build_windows.bat path\to\StrangerThings.apkm` | `dist\windows\StrangerThings1984.exe` |
+| macOS | `./build_macos.sh path/to/StrangerThings.apkm` | `open dist/macos/StrangerThings1984.app` |
+| Linux | `./build_linux.sh path/to/StrangerThings.apkm` | `./dist/linux/StrangerThings1984.x86_64` |
+
+- **What the script does.** It prepares the game assets from your APK (about a minute), then
+  builds the game. The first build imports ~13,000 assets, so allow 2–30 minutes.
+- **No APK path?** The script asks for one.
+- **Rebuilding.** Run the script again without the APK, e.g. `./build_macos.sh`. Give the APK
+  again only if you want to redo the asset setup.
+- **Extra options** are passed on to the build: `--dev` for a development build, `--clean` or
+  `--full-clean` for a clean rebuild.
+
+The scripts are thin wrappers around `tools/setup.py` and `tools/build.py`, described below. Use
+those directly to cross-build for another OS, or for finer control.
 
 ## Getting the APK
 
