@@ -32,8 +32,8 @@ See [docs/PORT_NOTES.md](docs/PORT_NOTES.md) for intentional differences from th
 | Platform | Build | Tested |
 |---|---|---|
 | Windows 10/11 x64 | ✅ | ✅ plays |
-| macOS (universal: Intel + Apple silicon) | pending | not yet |
-| Linux x64 | pending | not yet |
+| macOS (universal: Intel + Apple silicon) | ✅ (cross-built from Windows) | not yet |
+| Linux x64 | ✅ (cross-built from Windows) | not yet |
 
 ## Requirements
 
@@ -205,6 +205,10 @@ codesign --force --deep --sign - StrangerThings1984.app
 chmod +x dist/linux/StrangerThings1984.x86_64
 ./dist/linux/StrangerThings1984.x86_64
 ```
+
+The game needs working OpenGL 3.2+ or Vulkan drivers. If it exits with "No supported renderers
+found", install your distribution's Mesa/GL packages, e.g. `sudo apt install libgl1 libvulkan1
+mesa-vulkan-drivers` on Debian/Ubuntu.
 
 ## Clean rebuild from scratch
 
