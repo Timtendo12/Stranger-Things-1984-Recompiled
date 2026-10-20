@@ -1,4 +1,4 @@
-"""Writes UnityProject/Assets/Scripts/Assembly-CSharp/DiscordConfig.Generated.cs (gitignored) from the
+"""Writes UnityProject/Assets/Scripts/Assembly-CSharp/PC/DiscordConfig.Generated.cs (gitignored) from the
 DISCORD_* settings in .env / the environment. An empty or invalid id compiles Rich Presence out.
 Run automatically by build.py and fastcheck.py; can also be run on its own."""
 import re
@@ -8,7 +8,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import PROJECT, ToolError, info, load_env, run_main, warn  # noqa: E402
 
-OUT = PROJECT / 'Assets' / 'Scripts' / 'Assembly-CSharp' / 'DiscordConfig.Generated.cs'
+OUT = PROJECT / 'Assets' / 'Scripts' / 'Assembly-CSharp' / 'PC' / 'DiscordConfig.Generated.cs'
+# Where older checkouts generated it; a leftover copy would define DiscordConfig twice.
+LEGACY = PROJECT / 'Assets' / 'Scripts' / 'Assembly-CSharp' / 'DiscordConfig.Generated.cs'
 
 
 def generate(quiet=False):
@@ -30,6 +32,8 @@ def generate(quiet=False):
             'public static class DiscordConfig\n{\n'
             '\tpublic const string ClientId = "%s";\n\n'
             '\tpublic const string LargeImageKey = "%s";\n}\n') % (cid, img)
+    for stale in (LEGACY, LEGACY.with_name(LEGACY.name + '.meta')):
+        stale.unlink(missing_ok=True)
     old = OUT.read_text(encoding='utf-8') if OUT.exists() else None
     if old != text:
         OUT.write_text(text, encoding='utf-8', newline='\n')
