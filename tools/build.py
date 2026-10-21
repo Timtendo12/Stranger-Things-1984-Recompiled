@@ -1,11 +1,12 @@
 """Build the game with Unity in batch mode.
 
-    python tools/build.py [--target windows|macos|linux|all] [--dev] [--clean | --full-clean]
+    python tools/build.py [--target windows|macos|linux|web|all] [--dev] [--clean | --full-clean]
 
 Output: dist/windows/StrangerThings1984.exe, dist/macos/StrangerThings1984.app,
-dist/linux/StrangerThings1984.x86_64. Unity's log goes to dist/logs/build-<target>.log.
-Requires tools/setup.py to have completed and Unity (version in ProjectSettings/ProjectVersion.txt)
-with the Mono build-support module for each target.
+dist/linux/StrangerThings1984.x86_64, dist/web/index.html. Unity's log goes to
+dist/logs/build-<target>.log. Requires tools/setup.py to have completed and Unity (version in
+ProjectSettings/ProjectVersion.txt) with the build-support module for each target (Mono for the
+desktop targets, Web Build Support for web).
 """
 import argparse
 import re
@@ -25,6 +26,7 @@ TARGETS = {
     'windows': ('Win64', 'windowsstandalonesupport', 'Windows Build Support (Mono)', 'StrangerThings1984.exe'),
     'macos': ('OSXUniversal', 'macstandalonesupport', 'Mac Build Support (Mono)', 'StrangerThings1984.app'),
     'linux': ('Linux64', 'linuxstandalonesupport', 'Linux Build Support (Mono)', 'StrangerThings1984.x86_64'),
+    'web': ('WebGL', 'webglsupport', 'Web Build Support', 'index.html'),
 }
 
 
@@ -112,7 +114,11 @@ def main():
                 info(f'Removed UnityProject/{d}')
     gen_discord_config.generate()
     built = [build(editor, t, args.dev, out_root) for t in targets]
-    info('\nDone. Run the game with: python tools/run.py' + ('' if len(built) == 1 else ' --target <target>'))
+    if len(built) > 1:
+        hint = ' --target <target>'
+    else:
+        hint = '' if targets[0] == host_os() else f' --target {targets[0]}'
+    info('\nDone. Run the game with: python tools/run.py' + hint)
     if 'macos' in targets and host_os() != 'macos':
         warn('The macOS app is unsigned. See README "macOS" for how to open it on a Mac.')
 

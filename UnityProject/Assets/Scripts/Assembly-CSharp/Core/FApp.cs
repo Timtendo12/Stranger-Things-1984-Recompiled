@@ -44,9 +44,16 @@ public class FApp
 	// PC port: replaces Netflix CurrentProfile.PreferredLanguage; a user setting stored in UnityEngine.PlayerPrefs (read before PlayerData exists).
 	public const string LanguagePrefKey = "PC.Language";
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+	// The web build leaves out the CJK fonts that zh-cn / zh-tw need (PortBuild), so Chinese is not offered there.
+	public static readonly string[] SupportedLanguages = { "en", "ar", "cz", "da", "de", "el", "es", "es-es", "fi", "fr", "he", "hi", "hr", "hu", "id", "it", "ja", "ko", "ms", "nb", "nl", "pl", "pt", "pt-pt", "ro", "ru", "sv", "th", "tr", "uk", "vi" };
+
+	private static readonly string[] SupportedLanguageNames = { "English", "Arabic", "Cestina", "Dansk", "Deutsch", "Greek", "Espanol", "Espanol (ES)", "Suomi", "Francais", "Hebrew", "Hindi", "Hrvatski", "Magyar", "Indonesia", "Italiano", "Japanese", "Korean", "Melayu", "Norsk", "Nederlands", "Polski", "Portugues (BR)", "Portugues (PT)", "Romana", "Russian", "Svenska", "Thai", "Turkce", "Ukrainian", "Tieng Viet" };
+#else
 	public static readonly string[] SupportedLanguages = { "en", "ar", "cz", "da", "de", "el", "es", "es-es", "fi", "fr", "he", "hi", "hr", "hu", "id", "it", "ja", "ko", "ms", "nb", "nl", "pl", "pt", "pt-pt", "ro", "ru", "sv", "th", "tr", "uk", "vi", "zh-cn", "zh-tw" };
 
 	private static readonly string[] SupportedLanguageNames = { "English", "Arabic", "Cestina", "Dansk", "Deutsch", "Greek", "Espanol", "Espanol (ES)", "Suomi", "Francais", "Hebrew", "Hindi", "Hrvatski", "Magyar", "Indonesia", "Italiano", "Japanese", "Korean", "Melayu", "Norsk", "Nederlands", "Polski", "Portugues (BR)", "Portugues (PT)", "Romana", "Russian", "Svenska", "Thai", "Turkce", "Ukrainian", "Tieng Viet", "Chinese (S)", "Chinese (T)" };
+#endif
 
 	public static string PreferredLanguage
 	{
@@ -69,7 +76,11 @@ public class FApp
 			}
 			if (lang != null && lang.ToLowerInvariant() == "zh")
 			{
-				return system.Contains("hans") || system.Contains("cn") ? "zh-cn" : "zh-tw";
+				string zh = system.Contains("hans") || system.Contains("cn") ? "zh-cn" : "zh-tw";
+				if (Array.IndexOf(SupportedLanguages, zh) >= 0)
+				{
+					return zh;
+				}
 			}
 			if (lang != null && Array.IndexOf(SupportedLanguages, lang.ToLowerInvariant()) >= 0)
 			{

@@ -1,14 +1,18 @@
 """Launch the built game.
 
-    python tools/run.py [--target windows|macos|linux] [--fullscreen] [--seconds N] [-- extra player args]
+    python tools/run.py [--target windows|macos|linux|web] [--fullscreen] [--seconds N] [-- extra player args]
 
 By default the game runs windowed at 1280x720 until you quit. With --seconds N it is stopped after
 N seconds and a summary of exceptions from the Unity player log is printed (useful for testing).
+--target web serves dist/web on http://localhost:<--port> and opens it in the browser until Ctrl+C.
 """
 import argparse
+import functools
+import http.server
 import subprocess
 import sys
 import time
+import webbrowser
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -18,6 +22,7 @@ PRODUCTS = {
     'windows': 'StrangerThings1984.exe',
     'macos': 'StrangerThings1984.app/Contents/MacOS/StrangerThings1984',
     'linux': 'StrangerThings1984.x86_64',
+    'web': 'index.html',
 }
 
 
@@ -41,13 +46,32 @@ def summarize(log):
     info(f'{len(seen)} distinct error/exception messages. Full log: {log}')
 
 
+def serve_web(port):
+    root = DIST / 'web'
+    if not (root / PRODUCTS['web']).exists():
+        raise ToolError(f'{root / PRODUCTS["web"]} does not exist. Build it first: python tools/build.py --target web')
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(root))
+    with http.server.ThreadingHTTPServer(('127.0.0.1', port), handler) as server:
+        url = f'http://localhost:{port}/'
+        info(f'Serving {root} at {url} (Ctrl+C to stop)')
+        webbrowser.open(url)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description='Run the built game.')
     ap.add_argument('--target', choices=list(PRODUCTS), default=host_os())
     ap.add_argument('--fullscreen', action='store_true')
     ap.add_argument('--seconds', type=int, help='stop after N seconds and summarise the player log')
+    ap.add_argument('--port', type=int, default=8000, help='web: local port to serve dist/web on')
     ap.add_argument('extra', nargs='*', help='extra arguments passed to the player (after --)')
     args = ap.parse_args()
+    if args.target == 'web':
+        return serve_web(args.port)
     if args.target != host_os():
         raise ToolError(f'A {args.target} build cannot be run on {host_os()}; copy dist/{args.target} to that OS.')
     exe = DIST / args.target / PRODUCTS[args.target]

@@ -22,6 +22,10 @@ public class FWorkQueue
 
 	public FWorkQueue(int threadCount)
 	{
+#if UNITY_WEBGL && !UNITY_EDITOR
+		// port guard: browsers have no threads; DoWork runs the work inline instead.
+		threadCount = 0;
+#endif
 		for (int i = 0; i < threadCount; i++)
 		{
 			Thread thread = new Thread(ThreadWorker);
@@ -43,6 +47,16 @@ public class FWorkQueue
 		FWorkItem item = new FWorkItem();
 		item.WorkAction = workAction;
 		item.WorkDoneAction = workDoneAction;
+		if (mThreads.Count == 0)
+		{
+			// port guard (web): no worker threads, so do the work now and keep the done callback on Update
+			item.WorkAction?.Invoke();
+			if (item.WorkDoneAction != null)
+			{
+				mDispatcher.Invoke(item.WorkDoneAction);
+			}
+			return;
+		}
 		lock (mQueue)
 		{
 			mQueue.Enqueue(item);

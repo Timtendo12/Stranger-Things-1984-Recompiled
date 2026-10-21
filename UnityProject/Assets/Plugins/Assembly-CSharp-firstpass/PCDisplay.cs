@@ -193,6 +193,10 @@ public class PCDisplay : MonoBehaviour
 	// Apply a window / fullscreen mode requested by the game options (FApp.UpdateVideoMode).
 	public static void SetMode(int width, int height, bool fullscreen)
 	{
+#if UNITY_WEBGL && !UNITY_EDITOR
+		// the page sizes the canvas; only fullscreen can be requested
+		Screen.fullScreen = fullscreen;
+#else
 		if (sInstance == null)
 		{
 			Screen.SetResolution(width, height, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
@@ -216,6 +220,7 @@ public class PCDisplay : MonoBehaviour
 			sInstance.mIgnoreSizeUntil = Time.realtimeSinceStartup + 1f;
 		}
 		sInstance.SavePrefs();
+#endif
 	}
 
 	private static bool HasCommandLineArg(string name)
@@ -239,6 +244,9 @@ public class PCDisplay : MonoBehaviour
 		mSavedH = mWindowedH;
 		mFullscreen = Screen.fullScreen;
 		bool cmdline = HasCommandLineArg("-screen-width") || HasCommandLineArg("-screen-fullscreen");
+#if UNITY_WEBGL && !UNITY_EDITOR
+		cmdline = true; // the page sizes the canvas, and browsers only allow fullscreen after a key press or click
+#endif
 		if (!cmdline && !Application.isEditor)
 		{
 			if (UnityEngine.PlayerPrefs.GetInt(PrefFullscreen, 0) == 1)
@@ -479,6 +487,9 @@ public class PCDisplay : MonoBehaviour
 
 	private void DoToggleFullscreen()
 	{
+#if UNITY_WEBGL && !UNITY_EDITOR
+		Screen.fullScreen = !Screen.fullScreen;
+#else
 		if (mFullscreen)
 		{
 			mFullscreen = false;
@@ -492,6 +503,7 @@ public class PCDisplay : MonoBehaviour
 		}
 		mIgnoreSizeUntil = Time.realtimeSinceStartup + 1f;
 		SavePrefs();
+#endif
 	}
 
 	private void SavePrefs()

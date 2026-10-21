@@ -18,6 +18,11 @@
 !/UnityProject/Assets/ShaderIncludes.meta
 !/UnityProject/Assets/csc.rsp
 !/UnityProject/Assets/csc.rsp.meta
+# Web build: IL2CPP stripping rules and the page template (tools/build.py --target web).
+!/UnityProject/Assets/link.xml
+!/UnityProject/Assets/link.xml.meta
+!/UnityProject/Assets/WebGLTemplates/
+!/UnityProject/Assets/WebGLTemplates.meta
 # Application icon (exe, window and taskbar), set by Editor/PortBuild.cs.
 !/UnityProject/Assets/PCIcon/
 !/UnityProject/Assets/PCIcon.meta

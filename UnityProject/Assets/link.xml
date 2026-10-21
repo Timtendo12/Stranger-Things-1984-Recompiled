@@ -1,0 +1,11 @@
+<!--
+  IL2CPP code stripping (web build). Saves are written with XmlSerializer (FPlayerStats -> FPlayerState[]), and
+  config / console / tween code looks types and members up by name, so the game's own assemblies and the XML
+  serializer are kept whole.
+-->
+<linker>
+  <assembly fullname="Assembly-CSharp" preserve="all" />
+  <assembly fullname="Assembly-CSharp-firstpass" preserve="all" />
+  <assembly fullname="BXPCoreUtil" preserve="all" />
+  <assembly fullname="System.Xml" preserve="all" />
+</linker>

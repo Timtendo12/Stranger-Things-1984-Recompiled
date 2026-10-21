@@ -59,6 +59,14 @@ public static class FVideoPlayer
 			FLog.Warning("FVideoPlayer.StartVideoFromResources: World camera is null!");
 			return;
 		}
+#if UNITY_WEBGL && !UNITY_EDITOR
+		// PC port (web): WebGL cannot play VideoClip assets; PortBuild puts the video in StreamingAssets.
+		mCurrentVideoName = name;
+		mCurrentPlayer = worldCamera.gameObject.GetOrCreateComponent<VideoPlayer>();
+		mCurrentPlayer.playOnAwake = false;
+		mCurrentPlayer.source = VideoSource.Url;
+		mCurrentPlayer.url = Application.streamingAssetsPath + "/" + name + ".mp4";
+#else
 		VideoClip videoClip = Resources.Load<VideoClip>("Video/" + name);
 		if (videoClip == null)
 		{
@@ -69,6 +77,7 @@ public static class FVideoPlayer
 		mCurrentPlayer = worldCamera.gameObject.GetOrCreateComponent<VideoPlayer>();
 		mCurrentPlayer.playOnAwake = false;
 		mCurrentPlayer.clip = videoClip;
+#endif
 		mCurrentPlayer.targetCamera = worldCamera;
 		mCurrentPlayer.renderMode = VideoRenderMode.CameraFarPlane;
 		AudioSource target = worldCamera.gameObject.GetOrCreateComponent<AudioSource>();

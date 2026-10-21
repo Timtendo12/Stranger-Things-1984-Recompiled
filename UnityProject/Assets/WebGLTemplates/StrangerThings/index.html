@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stranger Things: 1984</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    /* PCDisplay letterboxes to 16:9 inside the canvas, so the canvas simply fills the window. */
+    #unity-canvas { display: block; width: 100vw; height: 100vh; background: #000; outline: none; }
+    #loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+               justify-content: center; gap: 16px; color: #ddd; font: 16px monospace; }
+    #bar { width: 320px; height: 8px; border: 1px solid #ddd; }
+    #fill { width: 0; height: 100%; background: #ddd; }
+    #error { color: #f66; max-width: 80vw; text-align: center; }
+  </style>
+</head>
+<body>
+  <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <div id="loading">
+    <div>Loading Stranger Things: 1984</div>
+    <div id="bar"><div id="fill"></div></div>
+    <div id="error"></div>
+  </div>
+  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+  <script>
+    var canvas = document.querySelector("#unity-canvas");
+    var config = {
+      dataUrl: "Build/{{{ DATA_FILENAME }}}",
+      frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+      codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+      memoryUrl: "Build/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+      symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+      productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+      productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+      // saves and settings live under Application.persistentDataPath (IndexedDB); flush every write
+      autoSyncPersistentDataPath: true,
+      matchWebGLToCanvasSize: true,
+      devicePixelRatio: window.devicePixelRatio || 1,
+    };
+    createUnityInstance(canvas, config, function (progress) {
+      document.querySelector("#fill").style.width = Math.round(progress * 100) + "%";
+    }).then(function () {
+      document.querySelector("#loading").remove();
+      canvas.focus();
+    }).catch(function (message) {
+      document.querySelector("#error").textContent = message;
+    });
+    canvas.addEventListener("click", function () { canvas.focus(); });
+  </script>
+</body>
+</html>

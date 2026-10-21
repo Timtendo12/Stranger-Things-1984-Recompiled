@@ -61,6 +61,7 @@ public class PCDiscord : MonoBehaviour
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 	private static void Bootstrap()
 	{
+#if !(UNITY_WEBGL && !UNITY_EDITOR) // a browser cannot reach the Discord client's local IPC pipe/socket
 		if (!Application.isPlaying || sInstance != null)
 		{
 			return;
@@ -68,6 +69,7 @@ public class PCDiscord : MonoBehaviour
 		GameObject go = new GameObject("PCDiscord");
 		DontDestroyOnLoad(go);
 		sInstance = go.AddComponent<PCDiscord>();
+#endif
 	}
 
 	private void Awake()

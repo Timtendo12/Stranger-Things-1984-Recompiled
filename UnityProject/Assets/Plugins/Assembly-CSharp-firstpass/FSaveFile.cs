@@ -20,6 +20,13 @@ public class FSaveFile
 
 	public static string PersistentDataPath;
 
+	// PC port: browsers have no threads, so the web build always saves on the main thread.
+#if UNITY_WEBGL && !UNITY_EDITOR
+	private static readonly bool cThreadedSaves = false;
+#else
+	private static readonly bool cThreadedSaves = true;
+#endif
+
 	protected byte[] mSalt;
 
 	protected byte[] mXor;
@@ -321,7 +328,7 @@ public class FSaveFile
 		lock (mLock)
 		{
 			mSaveInProgress = true;
-			if (!mainThread)
+			if (!mainThread && cThreadedSaves)
 			{
 				new Thread(SaveWorkerXml).Start(root);
 			}
@@ -352,7 +359,7 @@ public class FSaveFile
 		lock (mLock)
 		{
 			mSaveInProgress = true;
-			if (!mainThread)
+			if (!mainThread && cThreadedSaves)
 			{
 				new Thread(SaveWorkerString).Start(str);
 			}
@@ -389,7 +396,7 @@ public class FSaveFile
 		lock (mLock)
 		{
 			mSaveInProgress = true;
-			if (!mainThread)
+			if (!mainThread && cThreadedSaves)
 			{
 				new Thread(SaveWorker).Start(stream);
 			}
