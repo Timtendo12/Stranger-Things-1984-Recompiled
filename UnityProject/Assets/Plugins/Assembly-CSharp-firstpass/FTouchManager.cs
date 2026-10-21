@@ -56,8 +56,8 @@ public class FTouchManager
 		mPendingTouches = new List<FTouch>();
 		Input.multiTouchEnabled = true;
 		// PC port: the shipped (mobile) build cleared this here and relied on Input.touches only. On Windows there are no
-		// touches, so the mouse must emulate the single touch.
-#if UNITY_STANDALONE || UNITY_EDITOR
+		// touches, so the mouse must emulate the single touch. Same in the browser (web build).
+#if UNITY_STANDALONE || UNITY_EDITOR || UNITY_WEBGL
 		ShouldMouseEmulateTouch = true;
 #else
 		ShouldMouseEmulateTouch = false;

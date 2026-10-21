@@ -639,7 +639,7 @@ public class PCInput : MonoBehaviour
 		}
 		if (mFocus == null || !mColliders.Contains(mFocus))
 		{
-			mFocus = PickInitialFocus();
+			mFocus = mColliders.Contains(top.PCDefaultFocus) ? top.PCDefaultFocus : PickInitialFocus();
 			mFocusVisible = true;
 			if (nav || mFocus == null)
 			{

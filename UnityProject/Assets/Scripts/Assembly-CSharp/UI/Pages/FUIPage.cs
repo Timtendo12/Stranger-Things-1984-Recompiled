@@ -532,6 +532,9 @@ public class FUIPage : FNode, FInputHandlerInterface
 		return false;
 	}
 
+	// PC port: the collider PCInput focuses first on this page (null = top-left-most).
+	public virtual FUICollider PCDefaultFocus => null;
+
 	public virtual void PreloadImages()
 	{
 

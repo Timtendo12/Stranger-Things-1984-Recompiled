@@ -239,6 +239,16 @@ public class FPagePregameOptions : FUIPage
 		TransitionOut(mDialog);
 	}
 
+	// PC port: Escape / Backspace / gamepad B close the dialog like tapping outside it does.
+	public override bool HandleBackKey()
+	{
+		if (!TransitionOutInProgress) // PCInput (key down) and FHUD (Escape key up) both call this
+		{
+			TransitionOut(mDialog);
+		}
+		return true;
+	}
+
 	public void ScreenShotOn()
 	{
 		if (base.OnStage)

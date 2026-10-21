@@ -321,10 +321,14 @@ public class FPageLegendMainMenu : FUIPage
 		base.HandleUpdate();
 		if (0.35f < Time.time - mLastVisSwitch)
 		{
-			mNewGameButton.Visible = !mNewGameButton.Visible;
+			// PC port: blink the label, not the button, so the button stays clickable / keyboard-focusable while blinked off
+			mNewGameButton.Label.Visible = !mNewGameButton.Label.Visible;
 			mLastVisSwitch = Time.time;
 		}
 	}
+
+	// PC port: Enter on the title screen starts the game instead of opening the options.
+	public override FUICollider PCDefaultFocus => mNewGameButton.Collider;
 
 	protected void HandlePress(FUICollider coll, FTouch touch)
 	{
