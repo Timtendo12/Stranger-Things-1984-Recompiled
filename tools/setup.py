@@ -14,6 +14,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -45,10 +46,23 @@ SKIP_PREFIXES = (
     'Assets/Scripts/',
     'Assets/Plugins/Assembly-CSharp-firstpass/',
 )
+# The exported UnityEngine.UI.dll is an AssetRipper stub (every method body is empty), so no uGUI
+# component would render. The project uses the com.unity.ugui package instead, and references to
+# the stub's scripts are pointed at the package's scripts (stub fileID -> package script GUID).
+UGUI_STUB_DLL = 'Assets/Plugins/UnityEngine.UI.dll'
+UGUI_SCRIPTS = {
+    708705254: '5f7201a12d95ffc409449d95f23cf332',    # UnityEngine.UI.Text
+    -765806418: 'fe87c0e1cc204ed48ad3b37840f39efc',   # UnityEngine.UI.Image
+    -98529514: '1344c3c82d62a2a41a3576d8abb8e3ea',    # UnityEngine.UI.RawImage
+    1980459831: '0cd44c1031e13a943bb63640046fad76',   # UnityEngine.UI.CanvasScaler
+    1301386320: 'dc42784cf147c0c48a680349fa168899',   # UnityEngine.UI.GraphicRaycaster
+    -619905303: '76c392e42b5098c458856cdf6ecaaaa1',   # UnityEngine.EventSystems.EventSystem
+    1077351063: '4f231c4fb786f3946a6b90b886c48677',   # UnityEngine.EventSystems.StandaloneInputModule
+}
 REMOVED_FILES = {
     'Assets/Plugins/BXPCoreUtil.dll', 'Assets/Plugins/NetflixSdk.dll',
     'Assets/Plugins/NetflixSdk.Internal.Android.dll', 'Assets/Plugins/NetflixSdk.Internal.Common.dll',
-    'Assets/Plugins/Newtonsoft.Json.dll',
+    'Assets/Plugins/Newtonsoft.Json.dll', UGUI_STUB_DLL,
 }
 
 
@@ -414,6 +428,40 @@ def patch_plugin_dlls(supported):
     info(f'Patched {len(p["files"])} plugin DLLs.')
 
 
+def retarget_ugui_scripts(generated, stub_guid):
+    """Point scene/prefab references to the stub UnityEngine.UI.dll scripts at com.unity.ugui."""
+    pattern = re.compile(r'\{fileID: (-?\d+), guid: ' + re.escape(stub_guid) + r', type: 3\}')
+    unknown = set()
+
+    def package_ref(m):
+        guid = UGUI_SCRIPTS.get(int(m.group(1)))
+        if guid is None:
+            unknown.add(m.group(1))
+            return m.group(0)
+        return '{fileID: 11500000, guid: ' + guid + ', type: 3}'
+
+    n = 0
+    for rel in generated:
+        if not rel.endswith(('.unity', '.prefab', '.asset')):
+            continue
+        p = PROJECT / rel
+        text = p.read_text(encoding='utf-8')
+        if stub_guid not in text:
+            continue
+        p.write_text(pattern.sub(package_ref, text), encoding='utf-8', newline='')
+        n += 1
+    if unknown:
+        raise ToolError(f'UnityEngine.UI scripts with unknown stub fileIDs: {", ".join(sorted(unknown))}')
+    info(f'Pointed uGUI script references in {n} files at com.unity.ugui.')
+
+
+def stub_dll_guid(export_root, rel):
+    for line in (export_root / (rel + '.meta')).read_text(encoding='utf-8').splitlines():
+        if line.startswith('guid: '):
+            return line[6:].strip()
+    raise ToolError(f'{rel}.meta in the export has no GUID.')
+
+
 def pin_guids(generated, supported):
     """Give assets referenced from tracked settings the GUIDs the repository expects."""
     remap = {}
@@ -503,6 +551,7 @@ def main():
     exe = ensure_assetripper(args, supported)
     export_root = run_assetripper(exe, staged, supported)
     generated = assemble(export_root)
+    retarget_ugui_scripts(generated, stub_dll_guid(export_root, UGUI_STUB_DLL))
     patch_plugin_dlls(supported)
     pin_guids(generated, supported)
     verify(supported)

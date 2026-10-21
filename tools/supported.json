@@ -53,8 +53,7 @@
       "Backtrace.Unity.dll",
       "Unity.Services.Analytics.dll",
       "Unity.Services.Core.Internal.dll",
-      "Unity.VisualScripting.Core.dll",
-      "UnityEngine.UI.dll"
+      "Unity.VisualScripting.Core.dll"
     ]
   },
   "guid_pins": {
@@ -63,7 +62,6 @@
   },
   "required": {
     "Assets/Scenes/Default.unity": 0,
-    "Assets/Plugins/UnityEngine.UI.dll": 0,
     "Assets/Resources/GameConfig.txt": 0,
     "Assets/Resources/GameCommands.txt": 0,
     "Assets/Resources/atlases": 30,

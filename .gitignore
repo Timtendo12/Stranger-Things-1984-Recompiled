@@ -36,6 +36,7 @@
 !/UnityProject/Assets/Resources/shaders/
 /UnityProject/Assets/Resources/shaders/*
 !/UnityProject/Assets/Resources/shaders/VertexColorOnly.shader
+!/UnityProject/Assets/Resources/shaders/chaptertitleshader.shader
 !/UnityProject/Assets/Resources/shaders/bxpdynamicfont4.shader
 !/UnityProject/Assets/Resources/shaders/bxpdynamicfontoutlinevertshadow.shader
 !/UnityProject/Assets/Resources/shaders/bxpdynamicfontshadow4.shader
