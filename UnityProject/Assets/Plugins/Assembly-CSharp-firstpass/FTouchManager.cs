@@ -189,8 +189,9 @@ public class FTouchManager
 			FTouch touch = default;
 			touch.FingerId = unityTouch.fingerId;
 			touch.ButtonID = -1;
-			touch.Position = new Vector2((unityTouch.position.x + offsetX) * touchScale, (unityTouch.position.y + offsetY) * touchScale);
-			touch.RawPosition = unityTouch.position;
+			Vector2 position = unityTouch.position - PCDisplay.Offset; // PC port: into the letterboxed virtual screen
+			touch.Position = new Vector2((position.x + offsetX) * touchScale, (position.y + offsetY) * touchScale);
+			touch.RawPosition = position;
 			touch.TapCount = unityTouch.tapCount;
 			touch.Phase = unityTouch.phase;
 			touches.Add(touch);
@@ -403,6 +404,12 @@ public class FTouchManager
 		{
 			return;
 		}
-		mPendingTouches.Add(new FTouch(e));
+		FTouch touch = new FTouch(e);
+		// PC port: ignore presses in the letterbox bars
+		if (touch.Phase == TouchPhase.Began && (touch.RawPosition.x < 0f || touch.RawPosition.y < 0f || touch.RawPosition.x >= PCDisplay.Width || touch.RawPosition.y >= PCDisplay.Height))
+		{
+			return;
+		}
+		mPendingTouches.Add(touch);
 	}
 }

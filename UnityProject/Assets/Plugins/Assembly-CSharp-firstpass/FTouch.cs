@@ -18,8 +18,12 @@ public struct FTouch
 	public FTouch(Event e)
 	{
 		float inverse = 1f / Futile.DisplayScale;
+		// PC port: GUI events are in real window pixels (top-left origin); move them into the letterboxed virtual screen
+		// like PCDisplay.MousePosition does.
+		Vector2 offset = PCDisplay.Offset;
 		Vector2 mouse = e.mousePosition;
-		float rawY = (float)PCDisplay.Height - mouse.y;
+		mouse.x -= offset.x;
+		float rawY = (float)Screen.height - e.mousePosition.y - offset.y;
 		FingerId = 0;
 		RawPosition = new Vector2(mouse.x, rawY);
 		Position = new Vector2((mouse.x - Futile.Screen.PixelWidth * Futile.Screen.OriginX) * inverse, (rawY - Futile.Screen.PixelHeight * Futile.Screen.OriginY) * inverse);
