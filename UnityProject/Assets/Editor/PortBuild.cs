@@ -7,6 +7,7 @@ using UnityEngine;
 
 // PC port build entry points. tools/build.py runs:
 //   Unity -batchmode -executeMethod PortBuild.Build -portTarget windows|macos|linux|web -portOut <dir> [-portDev]
+//         [-portMacArch universal|arm64|x64]
 public static class PortBuild
 {
 	private const string ProductFile = "StrangerThings1984";
@@ -44,7 +45,8 @@ public static class PortBuild
 		string target = Arg(args, "-portTarget") ?? "windows";
 		string outDir = Arg(args, "-portOut") ?? DefaultOut(target);
 		bool dev = Array.IndexOf(args, "-portDev") >= 0;
-		Build(target, outDir, dev);
+		string macArch = Arg(args, "-portMacArch") ?? "universal";
+		Build(target, outDir, dev, macArch);
 	}
 
 	private static string DefaultOut(string target) => Path.GetFullPath(Path.Combine("..", "dist", target));
@@ -55,7 +57,7 @@ public static class PortBuild
 		return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
 	}
 
-	private static void Build(string target, string outDir, bool dev)
+	private static void Build(string target, string outDir, bool dev, string macArch = "universal")
 	{
 		RestoreWebMoves();
 		BuildTarget buildTarget;
@@ -70,7 +72,10 @@ public static class PortBuild
 			case "macos":
 				buildTarget = BuildTarget.StandaloneOSX;
 				location = Path.Combine(outDir, ProductFile + ".app");
-				SetMacUniversal();
+				if (!SetMacArchitecture(macArch))
+				{
+					return;
+				}
 				break;
 			case "linux":
 				buildTarget = BuildTarget.StandaloneLinux64;
@@ -240,24 +245,41 @@ public static class PortBuild
 
 	private static string ParkedMeta(string original) => "../.cache/web-excluded/meta/" + Path.GetFileName(original) + ".meta";
 
-	// Universal (Intel + Apple silicon) app. The settings type lives in the Mac build-support
-	// module, so it is looked up by name to keep this file compiling without that module.
-	private static void SetMacUniversal()
+	// universal (Intel + Apple silicon, the default), arm64 (Apple silicon only) or x64 (Intel only;
+	// runs under Rosetta on Apple silicon). The settings type lives in the Mac build-support module,
+	// so it is looked up by name to keep this file compiling without that module.
+	private static bool SetMacArchitecture(string macArch)
 	{
+		string value;
+		switch (macArch)
+		{
+			case "universal": value = "x64ARM64"; break;
+			case "arm64": value = "ARM64"; break;
+			case "x64": value = "x64"; break;
+			default:
+				Fail($"PortBuild: unknown -portMacArch '{macArch}' (use universal, arm64 or x64)");
+				return false;
+		}
 		Type t = Type.GetType("UnityEditor.OSXStandalone.UserBuildSettings, UnityEditor.OSXStandalone.Extensions");
 		var prop = t?.GetProperty("architecture", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-		if (prop == null)
-		{
-			Debug.LogWarning("PortBuild: macOS architecture setting not found; using the editor default.");
-			return;
-		}
 		try
 		{
-			prop.SetValue(null, Enum.Parse(prop.PropertyType, "x64ARM64"));
+			if (prop == null)
+			{
+				throw new MissingMemberException("UserBuildSettings.architecture not found");
+			}
+			prop.SetValue(null, Enum.Parse(prop.PropertyType, value));
+			return true;
 		}
 		catch (Exception e)
 		{
-			Debug.LogWarning("PortBuild: could not select a universal macOS build: " + e.Message);
+			if (macArch != "universal")
+			{
+				Fail($"PortBuild: could not select a {macArch} macOS build: " + e.Message);
+				return false;
+			}
+			Debug.LogWarning("PortBuild: could not select a universal macOS build, using the editor default: " + e.Message);
+			return true;
 		}
 	}
 

@@ -1,18 +1,17 @@
 # Stranger Things: 1984 — Recompiled
 
 A native PC port (Windows, macOS, Linux) of *Stranger Things: 1984* (BonusXP / Netflix, Android
-version 1.0.605). The game logic was re-implemented in C# from the shipped Android build and
-runs as a regular Unity project, with keyboard, mouse and gamepad controls and a resizable or
-fullscreen window.
+version 1.0.605), plus a web (WebGL) build that runs in the browser. The game logic was
+re-implemented in C# from the shipped Android build and runs as a regular Unity project, with
+keyboard, mouse and gamepad controls and a resizable or fullscreen window.
 
-**This repository contains no game assets** apart from the application icon. You need your own copy
-of the Android game (an APK).
-The setup script turns it into the art, audio, levels and data the port needs, on your own
-computer.
+**This repository contains no game assets.** You need your own copy of the Android game (an
+APK). The setup script turns it into the art, audio, levels and data the port needs, on your own
+computer. The application icon is downloaded at build time.
 
 ## Status
 
-The game is broadly playable on Windows. That covers menus, story, ~66 worlds, shops,
+The game is broadly playable on Windows and macOS. That covers menus, story, ~66 worlds, shops,
 bag/map/pause, saves, music and sound, the playable characters, and bosses such as the Evil
 Scientist. Known gaps:
 
@@ -33,8 +32,9 @@ See [docs/PORT_NOTES.md](docs/PORT_NOTES.md) for intentional differences from th
 | Platform | Build | Tested |
 |---|---|---|
 | Windows 10/11 x64 | ✅ | ✅ plays |
-| macOS (universal: Intel + Apple silicon) | ✅ (cross-built from Windows) | not yet |
-| Linux x64 | ✅ (cross-built from Windows) | not yet |
+| macOS (universal: Intel + Apple silicon) | ✅ | ✅ plays |
+| Linux x64 | ✅ (cross-built) | not yet |
+| Web (WebGL) | ✅ | early: menus and input work, see [Web](#web) |
 
 ## Requirements
 
@@ -47,14 +47,16 @@ See [docs/PORT_NOTES.md](docs/PORT_NOTES.md) for intentional differences from th
   - Only to cross-build for another OS, add that OS's module in Unity Hub: *Windows Build
     Support (Mono)*, *Mac Build Support (Mono)* or *Linux Build Support (Mono)*. IL2CPP modules
     and Xcode are not needed.
+  - Only for the web build, add *Web Build Support*.
 - **Python 3.10 or newer** (only the standard library is used).
-- About **3 GB** of free disk space, and an internet connection for the first setup. Setup
-  downloads AssetRipper once and Unity downloads one package.
+- About **3 GB** of free disk space, and an internet connection for the first setup and build.
+  Setup downloads AssetRipper once, Unity downloads one package, and the first build downloads
+  the application icon.
 
 ## Quick start
 
 Install the [requirements](#requirements), clone the repository, then run the build script for
-your OS with the path to your APK:
+your OS (or the web) with the path to your APK:
 
 ```sh
 git clone https://github.com/Timtendo12/Stranger-Things-1984-Recompiled.git
@@ -66,6 +68,7 @@ cd Stranger-Things-1984-Recompiled
 | Windows | `build_windows.bat path\to\StrangerThings.apkm` | `dist\windows\StrangerThings1984.exe` |
 | macOS | `./build_macos.sh path/to/StrangerThings.apkm` | `open dist/macos/StrangerThings1984.app` |
 | Linux | `./build_linux.sh path/to/StrangerThings.apkm` | `./dist/linux/StrangerThings1984.x86_64` |
+| Web (from macOS or Linux) | `./build_webgl.sh path/to/StrangerThings.apkm` | `python3 tools/run.py --target web` |
 
 - **What the script does.** It prepares the game assets from your APK (about a minute), then
   builds the game. The first build imports ~13,000 assets, so allow 2–30 minutes.
@@ -73,7 +76,11 @@ cd Stranger-Things-1984-Recompiled
 - **Rebuilding.** Run the script again without the APK, e.g. `./build_macos.sh`. Give the APK
   again only if you want to redo the asset setup.
 - **Extra options** are passed on to the build: `--dev` for a development build, `--clean` or
-  `--full-clean` for a clean rebuild.
+  `--full-clean` for a clean rebuild. On macOS the app is universal (Intel + Apple silicon) by
+  default; `--silicon` builds for Apple silicon only and `--intel` for Intel only (runs under
+  Rosetta on Apple silicon).
+- **Web build on Windows.** There is no `.bat` wrapper for it yet; run
+  `python tools\build.py --target web` after setup.
 
 The scripts are thin wrappers around `tools/setup.py` and `tools/build.py`, described below. Use
 those directly to cross-build for another OS, or for finer control.
@@ -137,10 +144,12 @@ Every generated file is gitignored. Re-running setup replaces the previously gen
 
 ```sh
 python tools/build.py                       # this OS, release build
-python tools/build.py --target windows      # or macos / linux / all
+python tools/build.py --target windows      # or macos / linux / web / all
 python tools/build.py --dev                 # development build (debugger, Unity dev console)
 python tools/build.py --clean               # delete previous output for the target first
 python tools/build.py --full-clean          # also delete UnityProject/Library (full re-import)
+python tools/build.py --target macos --silicon  # macOS: Apple silicon only (default: universal)
+python tools/build.py --target macos --intel    # macOS: Intel only (Rosetta on Apple silicon)
 ```
 
 | Target | Output |
@@ -148,10 +157,15 @@ python tools/build.py --full-clean          # also delete UnityProject/Library (
 | windows | `dist/windows/StrangerThings1984.exe` (plus the data folder next to it) |
 | macos | `dist/macos/StrangerThings1984.app` |
 | linux | `dist/linux/StrangerThings1984.x86_64` (plus the data folder next to it) |
+| web | `dist/web/index.html` (plus `Build/`, `StreamingAssets/` and `favicon.png`) |
 
 - The Unity build log is written to `dist/logs/build-<target>.log`.
-- Builds use the Mono scripting backend, so you can cross-build from one OS for the others as
-  long as the matching *Build Support (Mono)* module is installed.
+- Desktop builds use the Mono scripting backend, so you can cross-build from one OS for the
+  others as long as the matching *Build Support (Mono)* module is installed. The web build uses
+  IL2CPP (WebGL has no Mono) and takes noticeably longer.
+- Each build first makes sure the application icon is in place. It is downloaded once from
+  imgur into `.cache/GameIcon.png` and used for the exe/app/window icon and the web favicon. If
+  the download fails the build continues with Unity's default icon.
 - Close the Unity editor before building from the command line. Unity cannot open the same
   project twice.
 
@@ -177,6 +191,8 @@ go to Unity's per-user data folder:
 - **Windows:** `%USERPROFILE%\AppData\LocalLow\Gear Games, Inc\StrangerThings1984`
 - **macOS:** `~/Library/Application Support/Gear Games, Inc/StrangerThings1984`
 - **Linux:** `~/.config/unity3d/Gear Games, Inc/StrangerThings1984`
+- **Web:** the browser's storage for the page's address (IndexedDB), so saves are per browser
+  and per host/port
 
 ## Running
 
@@ -188,6 +204,9 @@ python tools/run.py --seconds 60    # run for 60 s, then print errors from the p
 
 You can also start the built executable directly. Controls are listed in
 [docs/CONTROLS.md](docs/CONTROLS.md). F11 or Alt+Enter toggles fullscreen.
+
+Launch with `-debug` for developer mode (collider overlay and more), e.g.
+`python tools/run.py -- -debug`. See [docs/PORT_NOTES.md](docs/PORT_NOTES.md#debug-mode).
 
 ### macOS
 
@@ -222,6 +241,25 @@ The game needs working OpenGL 3.2+ or Vulkan drivers. If it exits with "No suppo
 found", install your distribution's Mesa/GL packages, e.g. `sudo apt install libgl1 libvulkan1
 mesa-vulkan-drivers` on Debian/Ubuntu.
 
+### Web
+
+```sh
+python tools/run.py --target web              # serves dist/web on http://localhost:8000 and opens it
+python tools/run.py --target web --port 9000  # another port
+```
+
+Opening `index.html` straight from disk does not work; browsers block loading the game data from
+`file://`. Any static web server can host `dist/web`. The data is gzip-compressed with a
+decompression fallback, so no special `Content-Encoding` server setup is needed.
+
+Differences from the desktop builds:
+
+- **No Chinese.** The CJK fonts (~66 MB) are left out, so the zh-cn / zh-tw languages are hidden.
+- **No Discord Rich Presence.**
+- **The video** (`ExclusiveVideo.mp4`) is streamed from `StreamingAssets/` instead of being
+  packed in the build.
+- **Developer mode** is enabled with `index.html?debug` instead of a launch flag.
+
 ## Clean rebuild from scratch
 
 ```sh
@@ -244,6 +282,9 @@ python tools/build.py --full-clean
 | `The game assets are not set up yet` | Run `tools/setup.py` first |
 | Black screen on start | Another copy of the game is already running; close it |
 | AssetRipper download fails | Download the archive named in `tools/supported.json` yourself and pass `--assetripper <folder>` |
+| `Download of https://i.imgur.com/... failed` | The build continues with Unity's default icon. To use the real one, save that PNG as `.cache/GameIcon.png` and build again |
+| `has no Web Build Support module` | Unity Hub → Installs → 6000.2.6f2 → ⚙ → Add modules → *Web Build Support* |
+| Web page stays blank or fails to load | Serve it over HTTP (`python tools/run.py --target web`); don't open `index.html` from disk |
 
 Build errors are summarized on screen. The full log is in `dist/logs/`. The setup log is
 `.cache/assetripper.log`.
@@ -251,8 +292,9 @@ Build errors are summarized on screen. The full log is in `dist/logs/`. The setu
 ## Known limitations
 
 - **One game version.** Only Android version 1.0.605 is supported.
-- **Testing coverage.** Windows is tested end to end. macOS and Linux builds are produced by the
-  same pipeline, but get less testing.
+- **Testing coverage.** Windows and macOS are tested end to end. Linux and web builds are
+  produced by the same pipeline, but get less testing.
+- **Web build.** No Chinese languages and no Discord presence; see [Web](#web).
 - **Gamepads.** Mapping on macOS and Linux may be incomplete (legacy Unity input manager).
 - **Discord Rich Presence on macOS and Linux** is implemented but untested.
 - **Placeholder shaders.** Some original shaders are compiled-only in the APK. AssetRipper exports
@@ -262,12 +304,14 @@ Build errors are summarized on screen. The full log is in `dist/logs/`. The setu
 ## Repository layout
 
 ```
-build_*.sh/.bat   one-step setup + build per OS (wrappers around tools/)
+build_*.sh/.bat   one-step setup + build per OS, and build_webgl.sh for the web (wrappers around tools/)
 tools/            setup.py, build.py, run.py, fastcheck.py (dev compile check), supported.json
 UnityProject/     Unity project: ported C# (Assets/Scripts, Assets/Plugins/Assembly-CSharp-firstpass),
-                  editor build script, replacement shaders, application icon (Assets/PCIcon),
-                  project settings, packages.
-                  Everything else under Assets/ is generated by setup and gitignored.
+                  editor build script, replacement shaders, web page template
+                  (Assets/WebGLTemplates) and stripping rules (Assets/link.xml), project settings,
+                  packages.
+                  Everything else under Assets/ is generated by setup (or, for the application
+                  icon, downloaded by build.py) and gitignored.
 docs/             controls, port notes, coverage, supported versions
 ```
 
@@ -279,7 +323,7 @@ docs/             controls, port notes, coverage, supported versions
   BonusXP.
 - This is an unofficial fan project. It is not affiliated with, endorsed by or sponsored by
   Netflix or BonusXP.
-- No game assets, APKs or other proprietary files are included or distributed, except the
-  application icon (`UnityProject/Assets/PCIcon/GameIcon.png`, Stranger Things: 1984 store artwork).
-  You must own the game to use this port.
+- No game assets, APKs or other proprietary files are included or distributed. The application
+  icon (also the web favicon) is downloaded by `tools/build.py` at build time. You must own the
+  game to use this port.
 - Do not commit or share the files generated by `tools/setup.py`.

@@ -23,9 +23,9 @@
 !/UnityProject/Assets/link.xml.meta
 !/UnityProject/Assets/WebGLTemplates/
 !/UnityProject/Assets/WebGLTemplates.meta
-# Application icon (exe, window and taskbar), set by Editor/PortBuild.cs.
-!/UnityProject/Assets/PCIcon/
-!/UnityProject/Assets/PCIcon.meta
+# Web favicon, downloaded by tools/build.py (as is Assets/PCIcon, ignored above).
+/UnityProject/Assets/WebGLTemplates/StrangerThings/favicon.png
+/UnityProject/Assets/WebGLTemplates/StrangerThings/favicon.png.meta
 
 # Plugins: only the ported first-pass sources are ours; the stub DLLs come from setup.
 !/UnityProject/Assets/Plugins/
