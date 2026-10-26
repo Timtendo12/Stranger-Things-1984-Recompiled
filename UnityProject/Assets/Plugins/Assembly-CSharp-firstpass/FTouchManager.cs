@@ -100,6 +100,10 @@ public class FTouchManager
 
 	public bool IsOverUnityGUI(int buttonID)
 	{
+		if (PCDisplay.PointerBlocked)
+		{
+			return true; // PC port: the debug overlay has the mouse
+		}
 		if (EventSystem.current == null)
 		{
 			return false;
@@ -395,6 +399,10 @@ public class FTouchManager
 		if (!FConfigCore.EventBasedMouse)
 		{
 			return;
+		}
+		if (PCDisplay.PointerBlocked)
+		{
+			return; // PC port: the debug overlay has the mouse
 		}
 		if (!Event.current.isMouse)
 		{

@@ -205,7 +205,7 @@ python tools/run.py --seconds 60    # run for 60 s, then print errors from the p
 You can also start the built executable directly. Controls are listed in
 [docs/CONTROLS.md](docs/CONTROLS.md). F11 or Alt+Enter toggles fullscreen.
 
-Launch with `-debug` for developer mode (collider overlay and more), e.g.
+Launch with `-debug` for developer mode (F1 opens a debug overlay: teleport, items, characters and more), e.g.
 `python tools/run.py -- -debug`. See [docs/PORT_NOTES.md](docs/PORT_NOTES.md#debug-mode).
 
 ### macOS

@@ -158,197 +158,12 @@ public class PCInput : MonoBehaviour
 		return new Vector2Int((int)x, (int)y);
 	}
 
-	private bool mBossBeating;
-
-	private static bool sSingleHit;
-
-	// debug (-debug, F6): hit the boss of the current room every 0.7 s with the player's weapon until it is gone.
-	private System.Collections.IEnumerator BeatBoss()
-	{
-		mBossBeating = true;
-		int maxHits = sSingleHit ? 1 : 120;
-		for (int i = 0; i < maxHits; i++)
-		{
-			FUnit boss = null;
-			FRoom room = FApp.World.CurrentRoom;
-			if (room != null)
-			{
-				for (int u = 0; u < room.Units.Count; u++)
-				{
-					if (room.Units[u] != null && room.Units[u].ProtoUnit.IsTag("Boss") && room.Units[u].AliveAndWell)
-					{
-						boss = room.Units[u];
-					}
-				}
-			}
-			if (boss == null || FWorld.Player == null)
-			{
-				break;
-			}
-			boss.OnAttacked(FWorld.Player, null, true, null);
-			Debug.Log("PCBoss hit hp=" + boss.HP);
-			yield return new WaitForSeconds(0.7f);
-		}
-		mBossBeating = false;
-	}
-
-	private float mNextAudioLog;
-
-	// Diagnostic: launch with -debug to print the playing AudioSources every 4 s into the player log.
-	private void LogAudio()
-	{
-		if (Time.unscaledTime < mNextAudioLog)
-		{
-			return;
-		}
-		mNextAudioLog = Time.unscaledTime + 4f;
-		System.Text.StringBuilder sb = new System.Text.StringBuilder("PCAudio playing:");
-		AudioSource[] sources = FindObjectsByType<AudioSource>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-		for (int i = 0; i < sources.Length; i++)
-		{
-			if (sources[i].isPlaying && sources[i].clip != null && sources[i].clip.length > 15f)
-			{
-				sb.Append(' ').Append(sources[i].clip.name).Append('(').Append(sources[i].volume.ToString("0.00")).Append(sources[i].mute ? ",MUTED" : "").Append(')');
-			}
-		}
-		Debug.Log(sb.ToString());
-	}
-
 	private void Update()
 	{
-		if (PCDebug.Enabled)
-		{
-			LogAudio();
-		}
 		FHUD hud = FApp.HUD;
 		if (hud == null || Futile.TouchManager == null)
 		{
 			return;
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F8) && FWorld.Player != null)
-		{
-			FWorld.Player.SetHP(0); // debug: test the death / retry flow
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.Home) && FWorld.Player != null)
-		{
-			// debug: cast the guard-cone ray from the player in the four directions and report the first non-passable tile hit
-			Vector3 pp = FWorld.Player.Position;
-			Vector2[] dirs = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
-			RaycastHit2D[] hits = new RaycastHit2D[20];
-			for (int d = 0; d < 4; d++)
-			{
-				int n = Physics2D.RaycastNonAlloc(new Vector2(pp.x, pp.y), dirs[d], hits, 6f);
-				string info = "PCRay " + dirs[d] + " from " + pp.x.ToString("0.0") + "," + pp.y.ToString("0.0") + " n=" + n;
-				for (int h = 0; h < n; h++)
-				{
-					FTile t = FApp.World.GetTileFromGO(hits[h].collider.gameObject);
-					FUnit u = FApp.World.GetUnitFromGO(hits[h].collider.gameObject);
-					info += " [" + (t != null ? "tile " + t.Position.x + "," + t.Position.y + " pass=" + t.TerrainPassable : (u != null ? "unit " + u.ProtoUnit.Name : "other " + hits[h].collider.name)) + " d=" + hits[h].distance.ToString("0.00") + (hits[h].collider.isTrigger ? " trig" : "") + "]";
-				}
-				Debug.Log(info);
-			}
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F10) && FWorld.Player != null)
-		{
-			// debug: teleport the player into the Library boss room (tile 24,3)
-			FWorld.Player.AI.StopActions();
-			FWorld.Player.GO.transform.position = new Vector3(24f, 3f, FWorld.Player.GO.transform.position.z);
-			FWorld.Player.SetTilePosition(new FPoint2(24, 3), true);
-			Debug.Log("PCTeleport room=" + FApp.World.CurrentRoom.ProtoRoom.Name);
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F12) && FApp.PlayerData != null)
-		{
-			// debug: exercise FApp.UpdateVideoMode (resolution keep / revert dialog)
-			FApp.PlayerData.SetResolution(1000, 800, 60, false, true);
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F1) && FApp.World != null)
-		{
-			// debug: classify every tile of every room (+1 margin): . passable, X blocked by a unit, # wall (collider), ~ no tile
-			for (int r = 0; r < FApp.World.Rooms.Count; r++)
-			{
-				FRoom room = FApp.World.Rooms[r];
-				Rect b = room.ProtoRoom.Bounds;
-				Debug.Log("PCRoom " + room.ProtoRoom.Name + " bounds " + b + " encounter=" + room.ProtoRoom.EnemyEncounterRoom);
-				for (int ty = (int)(b.y + b.height); ty >= (int)b.y - 1; ty--)
-				{
-					string row = "PCRow y=" + ty.ToString("00") + " ";
-					for (int tx = (int)b.x - 1; tx <= (int)(b.x + b.width); tx++)
-					{
-						FTile t = FApp.World.GetTile(new FPoint2(tx, ty));
-						row += t == null ? "~" : (t.TerrainPassable ? "." : "#");
-					}
-					Debug.Log(row);
-				}
-			}
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F2) && FWorld.Player != null)
-		{
-			// debug: knock the player one tile to the left like a thrown vial would
-			FWorld.Player.OnAttacked(FWorld.Player, 1, Vector2.left, 1, true);
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F3) && FWorld.Player != null)
-		{
-			// debug: single step left into whatever is there (e.g. a laser beam)
-			FPoint2 tp = FWorld.Player.TilePosition;
-			FWorld.Player.AI.StopActions();
-			FWorld.Player.AI.DoMoveToPoint(new FPoint2(tp.x - 1, tp.y), 0, false, true, true, string.Empty);
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F4) && FWorld.Player != null)
-		{
-			FWorld.Player.ProtoUnit.SetDamageTakenModifier(0f); // debug: invulnerable
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F5) && !mBossBeating)
-		{
-			sSingleHit = true; // debug: one boss hit per F5
-			StartCoroutine(BeatBoss());
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F6) && FWorld.Player != null && FApp.World.CurrentRoom != null && !mBossBeating)
-		{
-			sSingleHit = false;
-			StartCoroutine(BeatBoss());
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F7) && FWorld.Player != null && FApp.World.CurrentRoom != null)
-		{
-			// debug: dump the 9 x 11 tiles around the player
-			FPoint2 pp = FWorld.Player.TilePosition;
-			for (int ty = pp.y + 6; ty >= pp.y - 3; ty--)
-			{
-				string row = "PCDump y=" + ty + ":";
-				for (int tx = pp.x - 6; tx <= pp.x + 6; tx++)
-				{
-					FTile t = FApp.World.CurrentRoom.GetTile(new FPoint2(tx, ty));
-					if (t == null)
-					{
-						row += " ##";
-						continue;
-					}
-					string c = t.TerrainPassable ? (t.GetPassable(FWorld.Player, new List<int>()) ? " . " : " X ") : " # ";
-					row += c;
-				}
-				Debug.Log(row);
-			}
-			FTile ft = FApp.World.CurrentRoom.GetTile(pp);
-			for (int ty = pp.y + 6; ty >= pp.y - 3; ty--)
-			{
-				for (int tx = pp.x - 6; tx <= pp.x + 6; tx++)
-				{
-					FTile t = FApp.World.CurrentRoom.GetTile(new FPoint2(tx, ty));
-					if (t == null)
-					{
-						continue;
-					}
-					for (int u = 0; u < t.Units.Count; u++)
-					{
-						Debug.Log("PCDump unit " + t.Units[u].ProtoUnit.Name + " @" + tx + "," + ty + " obstructs=" + t.Units[u].Obstructs);
-					}
-				}
-			}
-		}
-		if (PCDebug.Enabled && Input.GetKeyDown(KeyCode.F9) && FApp.PlayerStats != null)
-		{
-			// debug (-debug): give coins and pudding for shop / ability tests
-			FApp.PlayerStats.SetCoins(100);
-			FApp.PlayerStats.SetPudding(5);
 		}
 		if (mReleaseTime >= 0f && Time.unscaledTime >= mReleaseTime)
 		{
@@ -361,6 +176,14 @@ public class PCInput : MonoBehaviour
 			mFocusVisible = false;
 		}
 		mLastMouse = Input.mousePosition;
+		if (PCDebugOverlay.IsOpen)
+		{
+			// the debug overlay has the keyboard: stop a held move and drop the focus ring
+			mHeldDir = Vector2Int.zero;
+			mMoveIssued = false;
+			mFocusVisible = false;
+			return;
+		}
 		FPageLegendWorld worldPage = hud.PageLegendWorld;
 		FUIPage top = hud.TopPage;
 		bool gameplay = top != null && top == worldPage && FApp.World != null && FWorld.Player != null && FWorld.Player.AI != null;
@@ -554,7 +377,7 @@ public class PCInput : MonoBehaviour
 		}
 		if (target == pos)
 		{
-			if (PCDebug.Enabled)
+			if (PCDebugOverlay.LogMoves)
 			{
 				FPoint2 n1 = new FPoint2(pos.x + dir.x, pos.y + dir.y);
 				FTile t1 = room.GetTile(n1);
@@ -574,7 +397,7 @@ public class PCInput : MonoBehaviour
 		player.AI.StopActions();
 		mMoveIssued = player.AI.DoMoveToPoint(target, 0, false, true, true, string.Empty);
 		mLastIssuedDir = dir;
-		if (PCDebug.Enabled)
+		if (PCDebugOverlay.LogMoves)
 		{
 			Debug.Log("PCMove issue from " + pos.x + "," + pos.y + " to " + target.x + "," + target.y + " ok=" + mMoveIssued + " input=" + FApp.World.InputEnabled);
 		}

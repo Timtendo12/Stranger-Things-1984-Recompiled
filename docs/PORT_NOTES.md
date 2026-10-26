@@ -31,24 +31,19 @@ Differences between this PC port and the shipped Android build (1.0.605). Add an
 ## Debug mode
 
 Launching with `-debug` (or `--debug`) turns on (`PCDebug.Enabled`):
-- **Collider overlay** (`PCDebug.cs`, drawn with the ported FDebugLineRenderer): green = unit, red = wall / solid tile, yellow = trigger.
-- **Logging** to the player log: playing AudioSources every 4 s, blocked / issued keyboard moves, Discord Rich Presence errors.
-- **Test keys** (`PCInput.cs`):
+- **FPS counter** in the top-right corner.
+- **Debug overlay** (`PCDebugOverlay.cs`), opened and closed with **F1**. While it is open the keyboard, gamepad and mouse go only to the overlay (the game keeps running; the window has a Pause button). Tabs:
 
-| Key | Action |
+| Tab | Contents |
 |---|---|
-| F1 | Dump every room's tiles to the log (`.` passable, `X` unit, `#` wall, `~` no tile) |
-| F2 | Knock the player one tile left (thrown-vial knockback) |
-| F3 | Step the player one tile left into whatever is there |
-| F4 | Player invulnerable |
-| F5 / F6 | Hit the room's boss once / every 0.7 s until it is gone |
-| F7 | Dump the 9 x 11 tiles around the player |
-| F8 | Player HP to 0 (death / retry flow) |
-| F9 | 100 coins and pudding |
-| F10 | Teleport to the Library boss room |
-| F12 | Switch to 1000 x 800 (resolution keep / revert dialog) |
-| Home | Cast the guard sight-line ray in four directions and log the first wall hit |
-| Insert | Force a Discord presence update |
+| Worlds | Search and load any world; open a world (>) to arrive at one of its entry points (once you are in a world). Library boss room button (top entrance; also the `PCTeleportBoss()` console command, e.g. in `UserCommandsDelayed.txt`). |
+| Player | Heal, -1 HP, kill (death / retry flow), invulnerable, play as any character. |
+| Items | Coins, pudding, key cards and rocks (0 / +1 / +10 / max); give collectibles by type (dungeon items, tools, upgrades, heart pieces, outfits, ...). |
+| Characters | Unlock one or all characters (adds their unlock collectible, so it is saved); play as. |
+| Combat | Hit the room's boss once / every 0.7 s until it is gone; knockback and step-left tests. |
+| Tools | Collider overlay (green = unit, red = wall / solid tile, yellow = trigger), move and music logging, tile / unit / guard-ray dumps to the player log, resolution keep / revert dialog test, Discord presence update. |
+
+- **Logging** to the player log: Discord Rich Presence errors; move and music logging when switched on in Tools.
 
 ## Recovered values
 Values re-read from the disassembly changed: name generator whole-name chance (1/101), tabbed page transitions linear, shop price label colour (red/black with gray shadow), game-mode info and conflict popup separators "\n", FSoundManager default volumes, FTextSpanImage wrap string " ".

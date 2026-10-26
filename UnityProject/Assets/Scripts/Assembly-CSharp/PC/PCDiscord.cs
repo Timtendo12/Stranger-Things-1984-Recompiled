@@ -34,6 +34,14 @@ public class PCDiscord : MonoBehaviour
 
 	private static PCDiscord sInstance;
 
+	private static bool sForceUpdate;
+
+	// debug overlay (Tools tab): poll and send the presence on the next frame, logging the result
+	public static void ForceUpdate()
+	{
+		sForceUpdate = true;
+	}
+
 	private DiscordIpc mIpc;
 
 	private bool mEnabled;
@@ -115,7 +123,8 @@ public class PCDiscord : MonoBehaviour
 
 	private void Update()
 	{
-		bool debugKey = mDebugLog && (Input.GetKeyDown(KeyCode.Insert) || Input.GetKeyDown(KeyCode.Keypad0));
+		bool debugKey = mDebugLog && sForceUpdate;
+		sForceUpdate = false;
 		if (!mEnabled && !debugKey)
 		{
 			return;
@@ -166,6 +175,12 @@ public class PCDiscord : MonoBehaviour
 	{
 		string text = FLoc.GetString(key, true);
 		return string.IsNullOrEmpty(text) ? null : text.Replace("\n", " ");
+	}
+
+	// Readable place name for a world map name (e.g. "Library" -> "Hawkins Public Library"); null when there is none.
+	public static string KnownWorldName(string worldName)
+	{
+		return WorldFallback.TryGetValue(worldName, out string name) ? name : null;
 	}
 
 	private static string Pretty(string worldName)

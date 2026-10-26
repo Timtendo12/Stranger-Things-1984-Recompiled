@@ -63,6 +63,9 @@ public class PCDisplay : MonoBehaviour
 
 	private bool mFullscreen;
 
+	// Set by the debug overlay (PCDebugOverlay, Assembly-CSharp) while it is open: FTouchManager then ignores the mouse.
+	public static bool PointerBlocked;
+
 	public static bool Letterboxed
 	{
 		get

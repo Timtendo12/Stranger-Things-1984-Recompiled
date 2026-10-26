@@ -111,6 +111,8 @@ public static class PortBuild
 			PlayerSettings.usePlayerLog = true;
 		}
 		SetIcon();
+		// the Android export left the Unity splash on with its logo hidden: a plain grey screen before the game starts
+		PlayerSettings.SplashScreen.show = false;
 		Directory.CreateDirectory(outDir);
 		BuildPlayerOptions options = new BuildPlayerOptions
 		{

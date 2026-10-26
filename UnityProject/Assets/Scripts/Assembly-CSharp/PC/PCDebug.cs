@@ -2,9 +2,9 @@ using System;
 using UnityEngine;
 
 // PC port (new): developer mode, enabled by launching with -debug (or --debug), or index.html?debug on the web.
-// Draws every active 2D physics collider through FDebugLineRenderer: green = unit, red = other solid collider
-// (walls, obstructing tiles), yellow = trigger. PCInput (F1-F12 / Home test keys, move and audio logging) and
-// PCDiscord (Insert forces a presence update, error logging) check PCDebug.Enabled too.
+// Draws every active 2D physics collider through FDebugLineRenderer (toggle in the overlay): green = unit, red = other solid
+// collider (walls, obstructing tiles), yellow = trigger. PCDebugOverlay (F1) holds the test actions and the FPS counter;
+// PCDiscord checks PCDebug.Enabled for its error logging.
 [DefaultExecutionOrder(200)]
 public class PCDebug : MonoBehaviour
 {
@@ -15,6 +15,8 @@ public class PCDebug : MonoBehaviour
 	private static readonly Color SolidColor = new Color(1f, 0.25f, 0.25f, 0.9f);
 
 	private static readonly Color TriggerColor = new Color(1f, 0.9f, 0.2f, 0.6f);
+
+	public static bool ShowColliders = true;
 
 	private readonly Vector3[] mRect = new Vector3[5];
 
@@ -28,6 +30,15 @@ public class PCDebug : MonoBehaviour
 		GameObject go = new GameObject("PCDebug");
 		DontDestroyOnLoad(go);
 		go.AddComponent<PCDebug>();
+		PCDebugOverlay.Create(go);
+		FConsoleCore.Add(typeof(PCDebug));
+	}
+
+	// for UserCommandsDelayed.txt, e.g. "12|PCTeleportBoss()"
+	[ConsoleCommand("PCTeleportBoss")]
+	public static void PCTeleportBoss()
+	{
+		PCDebugOverlay.TeleportToLibraryBoss();
 	}
 
 	private static bool HasArg(string name)
@@ -46,6 +57,10 @@ public class PCDebug : MonoBehaviour
 	{
 		FDebugLineRenderer lines = FDebugLineRenderer.Temp;
 		lines.Clear();
+		if (!ShowColliders)
+		{
+			return;
+		}
 		FWorld world = FApp.World;
 		Collider2D[] colliders = FindObjectsByType<Collider2D>(FindObjectsSortMode.None);
 		for (int i = 0; i < colliders.Length; i++)
